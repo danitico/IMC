@@ -33,6 +33,7 @@ PerceptronMulticapa::PerceptronMulticapa(){
 
 // ------------------------------
 // Reservar memoria para las estructuras de datos
+// TODO PREGUNTAR A PEDRO POR EL INT, ES ABSURDO PONERLO AHI?!?!?!?!?!
 void PerceptronMulticapa::inicializar(int nl, int npl[]) {
 	this->nNumCapas = nl;
 	this->pCapas = new Capa[this->nNumCapas];
@@ -42,8 +43,21 @@ void PerceptronMulticapa::inicializar(int nl, int npl[]) {
 		this->pCapas[i].nNumNeuronas = npl[i];
 		this->pCapas[i].pNeuronas = new Neurona[this->pCapas[i].nNumNeuronas];
 
+		if(i == 0){
+			for(int j=0; j < this->pCapas[0].nNumNeuronas; j++){
+				this->pCapas[0].pNeuronas[j].deltaW = NULL;
+				this->pCapas[0].pNeuronas[j].ultimoDeltaW = NULL;
+				this->pCapas[0].pNeuronas[j].w = NULL;
+				this->pCapas[0].pNeuronas[j].wCopia = NULL;
+			}
+			continue;
+		}
+
 		for(int j=0; j < this->pCapas[i].nNumNeuronas; j++){
-			this->pCapas[i].pNeuronas[j].
+			this->pCapas[i].pNeuronas[j].deltaW = new double[this->pCapas[i-1].nNumNeuronas + 1];
+			this->pCapas[i].pNeuronas[j].ultimoDeltaW = new double[this->pCapas[i-1].nNumNeuronas + 1];
+			this->pCapas[i].pNeuronas[j].w = new double[this->pCapas[i-1].nNumNeuronas + 1];
+			this->pCapas[i].pNeuronas[j].wCopia = new double[this->pCapas[i-1].nNumNeuronas + 1];
 		}
 	}
 }
@@ -53,51 +67,102 @@ void PerceptronMulticapa::inicializar(int nl, int npl[]) {
 // DESTRUCTOR: liberar memoria
 PerceptronMulticapa::~PerceptronMulticapa() {
 	liberarMemoria();
-
 }
 
 
 // ------------------------------
 // Liberar memoria para las estructuras de datos
 void PerceptronMulticapa::liberarMemoria() {
+	for(int i=0; i < this->nNumCapas; i++){
+		if(i == 0){
+			for(int j=0; j < this->pCapas[0].nNumNeuronas; j++){
+				delete this->pCapas[0].pNeuronas;
+			}
+		}
+		else{
+			for(int j=0; j < this->pCapas[i].nNumNeuronas; j++){
+				delete this->pCapas[i].pNeuronas[j].deltaW;
+				delete this->pCapas[i].pNeuronas[j].ultimoDeltaW;
+				delete this->pCapas[i].pNeuronas[j].w;
+				delete this->pCapas[i].pNeuronas[j].wCopia;
+			}
 
+			delete this->pCapas[i].pNeuronas;
+		}
+	}
+
+	delete this->pCapas;
 }
 
 // ------------------------------
 // Rellenar todos los pesos (w) aleatoriamente entre -1 y 1
 void PerceptronMulticapa::pesosAleatorios() {
-
+	for(int i=1; i < this->nNumCapas; i++){
+		for(int j = 0; j < this->pCapas[i].nNumNeuronas; j++){
+			for(int k = 0; k < this->pCapas[i-1].nNumNeuronas + 1; k++){
+				this->pCapas[i].pNeuronas[j].w[k] =
+								(rand()/(double)RAND_MAX)*(1-(-1)) + (-1);
+			}
+		}
+	}
 }
 
 // ------------------------------
 // Alimentar las neuronas de entrada de la red con un patrón pasado como argumento
 void PerceptronMulticapa::alimentarEntradas(double* input) {
-
+	for(int i=0; i < this->pCapas[0].nNumNeuronas; i++){
+		this->pCapas[0].pNeuronas[i].x = input[i];
+	}
 }
 
 // ------------------------------
 // Recoger los valores predichos por la red (out de la capa de salida) y almacenarlos en el vector pasado como argumento
 void PerceptronMulticapa::recogerSalidas(double* output)
 {
-
+	for(int i=0; i < this->pCapas[this->nNumCapas-1].nNumNeuronas; i++){
+		output[i] = this->pCapas[this->nNumCapas-1].pNeuronas[i].x;
+	}
 }
 
 // ------------------------------
 // Hacer una copia de todos los pesos (copiar w en copiaW)
 void PerceptronMulticapa::copiarPesos() {
-
+	for(int i=1; i < this->nNumCapas; i++){
+		for(int j = 0; j < this->pCapas[i].nNumNeuronas; j++){
+			for(int k = 0; k < this->pCapas[i-1].nNumNeuronas + 1; k++){
+				this->pCapas[i].pNeuronas[j].wCopia[k] = this->pCapas[i].pNeuronas[j].w[k];
+			}
+		}
+	}
 }
 
 // ------------------------------
 // Restaurar una copia de todos los pesos (copiar copiaW en w)
 void PerceptronMulticapa::restaurarPesos() {
-
+	for(int i=1; i < this->nNumCapas; i++){
+		for(int j = 0; j < this->pCapas[i].nNumNeuronas; j++){
+			for(int k = 0; k < this->pCapas[i-1].nNumNeuronas + 1; k++){
+				this->pCapas[i].pNeuronas[j].w[k] = this->pCapas[i].pNeuronas[j].wCopia[k];
+			}
+		}
+	}
 }
 
 // ------------------------------
 // Calcular y propagar las salidas de las neuronas, desde la primera capa hasta la última
 void PerceptronMulticapa::propagarEntradas() {
-	
+	double net;
+	for(int i=1; i < this->nNumCapas; i++){
+		for(int j=0; j < this->pCapas[i].nNumNeuronas; j++){
+			net = 0.0;
+			for(int k=1; k < this->pCapas[i-1].nNumNeuronas + 1; k++){
+				net += this->pCapas[i].pNeuronas[j].w[k] * this->pCapas[i-1].pNeuronas[k-1].x;
+			}
+
+			net += this->pCapas[i].pNeuronas[j].w[0];
+			this->pCapas[i].pNeuronas[j].x = 1.0 / (1 + exp(-net));
+		}
+	}
 }
 
 // ------------------------------

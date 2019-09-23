@@ -23,13 +23,29 @@ using namespace util;
 // ------------------------------
 // CONSTRUCTOR: Dar valor por defecto a todos los parámetros
 PerceptronMulticapa::PerceptronMulticapa(){
-
+	this->nNumCapas = 2;
+	this->pCapas = NULL;
+	this->dDecremento = 2;
+	this->dValidacion = 0.2;
+	this->dEta = 0.1;
+	this->dMu = 0.9;
 }
 
 // ------------------------------
 // Reservar memoria para las estructuras de datos
-int PerceptronMulticapa::inicializar(int nl, int npl[]) {
-	return 1;
+void PerceptronMulticapa::inicializar(int nl, int npl[]) {
+	this->nNumCapas = nl;
+	this->pCapas = new Capa[this->nNumCapas];
+
+
+	for(int i=0; i < this->nNumCapas; i++){
+		this->pCapas[i].nNumNeuronas = npl[i];
+		this->pCapas[i].pNeuronas = new Neurona[this->pCapas[i].nNumNeuronas];
+
+		for(int j=0; j < this->pCapas[i].nNumNeuronas; j++){
+			this->pCapas[i].pNeuronas[j].
+		}
+	}
 }
 
 

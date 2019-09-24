@@ -33,7 +33,7 @@ PerceptronMulticapa::PerceptronMulticapa(){
 
 // ------------------------------
 // Reservar memoria para las estructuras de datos
-// TODO PREGUNTAR A PEDRO POR EL INT, ES ABSURDO PONERLO AHI?!?!?!?!?!
+
 void PerceptronMulticapa::inicializar(int nl, int npl[]) {
 	this->nNumCapas = nl;
 	this->pCapas = new Capa[this->nNumCapas];
@@ -54,8 +54,8 @@ void PerceptronMulticapa::inicializar(int nl, int npl[]) {
 		}
 
 		for(int j=0; j < this->pCapas[i].nNumNeuronas; j++){
-			this->pCapas[i].pNeuronas[j].deltaW = new double[this->pCapas[i-1].nNumNeuronas + 1];
-			this->pCapas[i].pNeuronas[j].ultimoDeltaW = new double[this->pCapas[i-1].nNumNeuronas + 1];
+			this->pCapas[i].pNeuronas[j].deltaW = new double[1];
+			this->pCapas[i].pNeuronas[j].ultimoDeltaW = new double[1];
 			this->pCapas[i].pNeuronas[j].w = new double[this->pCapas[i-1].nNumNeuronas + 1];
 			this->pCapas[i].pNeuronas[j].wCopia = new double[this->pCapas[i-1].nNumNeuronas + 1];
 		}
@@ -160,22 +160,42 @@ void PerceptronMulticapa::propagarEntradas() {
 			}
 
 			net += this->pCapas[i].pNeuronas[j].w[0];
-			this->pCapas[i].pNeuronas[j].x = 1.0 / (1 + exp(-net));
+			this->pCapas[i].pNeuronas[j].x = 1.0 / (1 + exp(net));
 		}
 	}
 }
 
 // ------------------------------
-// Calcular el error de salida (MSE) del out de la capa de salida con respecto a un vector objetivo y devolverlo
+// Calcular el cerror de salida (MSE) del out de la capa de salida con respecto a un vector objetivo y devolverlo
 double PerceptronMulticapa::calcularErrorSalida(double* target) {
-	return -1;
+	double mse = 0.0;
+	for(int i=0; i < this->pCapas[this->nNumCapas - 1].nNumNeuronas; i++){
+		mse += pow(target[i] - this->pCapas[this->nNumCapas - 1].pNeuronas[i].x, 2);
+	}
+
+	return mse / (double)this->pCapas[this->nNumCapas - 1].nNumNeuronas;
 }
 
 
 // ------------------------------
 // Retropropagar el error de salida con respecto a un vector pasado como argumento, desde la última capa hasta la primera
 void PerceptronMulticapa::retropropagarError(double* objetivo) {
-	
+	for(int i=0; i < this->pCapas[this->nNumCapas - 1].nNumNeuronas; i++){
+		double out = this->pCapas[this->nNumCapas - 1].pNeuronas[i].x;
+		this->pCapas[this->nNumCapas - 1].pNeuronas[i].deltaW[0] =
+				- (objetivo[i] - out)*out*(1-out);
+	}
+
+	for(int j=this->nNumCapas - 2; j >= 1; j--){
+		for(int k=0; k < this->pCapas[j].nNumNeuronas; k++){
+			double aux = 0.0, out = this->pCapas[j].pNeuronas[k].x;
+			for(int l=0; l < this->pCapas[j+1].nNumNeuronas; l++){
+				aux += this->pCapas[j+1].pNeuronas[l].w[k+1]*this->pCapas[j+1].pNeuronas[l].deltaW[0];
+			}
+
+			this->pCapas[j].pNeuronas[k].deltaW[0] = aux * out * (1-out);
+		}
+	}
 }
 
 // ------------------------------

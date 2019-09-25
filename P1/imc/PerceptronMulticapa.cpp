@@ -260,15 +260,42 @@ void PerceptronMulticapa::imprimirRed() {
 // Simular la red: propagar las entradas hacia delante, retropropagar el error y ajustar los pesos
 // entrada es el vector de entradas del patrón y objetivo es el vector de salidas deseadas del patrón
 void PerceptronMulticapa::simularRedOnline(double* entrada, double* objetivo) {
-
+	// TODO simular red online
 }
 
 // ------------------------------
 // Leer una matriz de datos a partir de un nombre de fichero y devolverla
 Datos* PerceptronMulticapa::leerDatos(const char *archivo) {
+	ifstream f(archivo);
 
+	if(!f.is_open()){
+		std::cout << "Error" << std::endl;
+		exit(-1);
+	}
 
-	return NULL;
+	Datos *datos = new Datos[1];
+
+	f >> datos->nNumEntradas >> datos->nNumSalidas >> datos->nNumPatrones;
+
+	datos->entradas = new double*[datos->nNumPatrones];
+	datos->salidas = new double*[datos->nNumPatrones];
+
+	for(int i=0; i < datos->nNumPatrones; i++){
+		datos->entradas[i] = new double[datos->nNumEntradas];
+		datos->salidas[i] = new double[datos->nNumSalidas];
+	}
+
+	for(int i=0; i < datos->nNumPatrones; i++){
+		for(int j=0; j < datos->nNumEntradas; j++){
+			f >> datos->entradas[i][j];
+		}
+
+		for(int k=0; k < datos->nNumSalidas; k++){
+			f >> datos->salidas[i][k];
+		}
+	}
+
+	return datos;
 }
 
 // ------------------------------
@@ -283,7 +310,14 @@ void PerceptronMulticapa::entrenarOnline(Datos* pDatosTrain) {
 // ------------------------------
 // Probar la red con un conjunto de datos y devolver el error MSE cometido
 double PerceptronMulticapa::test(Datos* pDatosTest) {
-	return -1.0;
+	double mse = 0.0;
+	for(int i=0; i<pDatosTest->nNumPatrones; i++){
+		this->alimentarEntradas(pDatosTest->entradas[i]);
+		this->propagarEntradas();
+		mse += this->calcularErrorSalida(pDatosTest->salidas[i]);
+	}
+
+	return mse / pDatosTest->nNumPatrones;
 }
 
 // OPCIONAL - KAGGLE

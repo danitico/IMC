@@ -103,6 +103,7 @@ void PerceptronMulticapa::liberarMemoria() {
 // Rellenar todos los pesos (w) aleatoriamente entre -1 y 1
 void PerceptronMulticapa::pesosAleatorios() {
 	for(int i=1; i < this->nNumCapas; i++){
+		std::cout << this->pCapas[i].nNumNeuronas << std::endl;
 		for(int j = 0; j < this->pCapas[i].nNumNeuronas; j++){
 			for(int k = 0; k < this->pCapas[i-1].nNumNeuronas + 1; k++){
 				this->pCapas[i].pNeuronas[j].w[k] =
@@ -221,19 +222,22 @@ void PerceptronMulticapa::acumularCambio() {
 // ------------------------------
 // Actualizar los pesos de la red, desde la primera capa hasta la última
 void PerceptronMulticapa::ajustarPesos() {
+	double modifiedEta = 0.0;
+
 	for(int i=1; i < this->nNumCapas; i++){
+		modifiedEta = pow(this->dDecremento,-(this->nNumCapas - 1 - i))*this->dEta;
 		for(int j=0; j < this->pCapas[i].nNumNeuronas; j++){
 			for(int k=1; k < this->pCapas[i-1].nNumNeuronas + 1; k++){
 				this->pCapas[i].pNeuronas[j].w[k] +=
-						(- this->dEta*this->pCapas[i].pNeuronas[j].deltaW[k])
-						- this->dMu*(this->dEta*this->pCapas[i].pNeuronas[j].ultimoDeltaW[k]);
+						(- modifiedEta*this->pCapas[i].pNeuronas[j].deltaW[k])
+						- this->dMu*(modifiedEta*this->pCapas[i].pNeuronas[j].ultimoDeltaW[k]);
 
 				this->pCapas[i].pNeuronas[j].ultimoDeltaW[k] = this->pCapas[i].pNeuronas[j].deltaW[k];
 			}
 
 			this->pCapas[i].pNeuronas[j].w[0] +=
-						(- this->dEta*this->pCapas[i].pNeuronas[j].deltaW[0])
-						- this->dMu*(this->dEta*this->pCapas[i].pNeuronas[j].ultimoDeltaW[0]);
+						(- modifiedEta*this->pCapas[i].pNeuronas[j].deltaW[0])
+						- this->dMu*(modifiedEta*this->pCapas[i].pNeuronas[j].ultimoDeltaW[0]);
 
 			this->pCapas[i].pNeuronas[j].ultimoDeltaW[0] = this->pCapas[i].pNeuronas[j].deltaW[0];
 		}
@@ -260,7 +264,19 @@ void PerceptronMulticapa::imprimirRed() {
 // Simular la red: propagar las entradas hacia delante, retropropagar el error y ajustar los pesos
 // entrada es el vector de entradas del patrón y objetivo es el vector de salidas deseadas del patrón
 void PerceptronMulticapa::simularRedOnline(double* entrada, double* objetivo) {
-	// TODO simular red online
+	for(int i=1; i < this->nNumCapas; i++){
+		for(int j=0; j < this->pCapas[i].nNumNeuronas; j++){
+			for(int k=0; k < this->pCapas[i-1].nNumNeuronas + 1; k++){
+				this->pCapas[i].pNeuronas[j].deltaW[k] = 0.0;
+			}
+		}
+	}
+
+	this->alimentarEntradas(entrada);
+	this->propagarEntradas();
+	this->retropropagarError(objetivo);
+	this->acumularCambio();
+	this->ajustarPesos();
 }
 
 // ------------------------------

@@ -73,15 +73,20 @@ int main(int argc, char **argv) {
 
         // Lectura de datos de entrenamiento y test: llamar a mlp.leerDatos(...)
 
-        // Inicializar vector topología
-        //int *topologia = new int[capas+2];
-        //topologia[0] = pDatosTrain->nNumEntradas;
-        //for(int i=1; i<(capas+2-1); i++)
-        //	topologia[i] = neuronas;
-        //topologia[capas+2-1] = pDatosTrain->nNumSalidas;
+        Datos *pDatosTest, *pDatosTrain;
+        pDatosTrain = mlp.leerDatos("train_xor.dat");
+        pDatosTest = mlp.leerDatos("test_xor.dat");
 
-        // Inicializar red con vector de topología
-        //mlp.inicializar(capas+2,topologia);
+
+		int *topologia = new int[3];
+		topologia[0] = pDatosTrain->nNumEntradas;
+		//for(int i=1; i<(capas+2-1); i++)
+		topologia[1] = 2;
+		topologia[2] = pDatosTrain->nNumSalidas;
+
+		mlp.inicializar(3,topologia);
+
+
 
 
         // Semilla de los números aleatorios
@@ -94,7 +99,7 @@ int main(int argc, char **argv) {
         	cout << "SEMILLA " << semillas[i] << endl;
         	cout << "**********" << endl;
     		srand(semillas[i]);
-    		mlp.ejecutarAlgoritmoOnline(pDatosTrain,pDatosTest,iteraciones,&(erroresTrain[i]),&(erroresTest[i]));
+    		mlp.ejecutarAlgoritmoOnline(pDatosTrain,pDatosTest,1000,&(erroresTrain[i]),&(erroresTest[i]));
     		cout << "Finalizamos => Error de test final: " << erroresTest[i] << endl;
 
             // (Opcional - Kaggle) Guardamos los pesos cada vez que encontremos un modelo mejor.

@@ -25,7 +25,7 @@ using namespace util;
 PerceptronMulticapa::PerceptronMulticapa(){
 	this->nNumCapas = 2;
 	this->pCapas = NULL;
-	this->dDecremento = 2;
+	this->dDecremento = 1;
 	this->dValidacion = 0.2;
 	this->dEta = 0.1;
 	this->dMu = 0.9;
@@ -166,7 +166,7 @@ void PerceptronMulticapa::propagarEntradas() {
 			}
 
 			net += this->pCapas[i].pNeuronas[j].w[0];
-			this->pCapas[i].pNeuronas[j].x = 1.0 / (1 + exp(net));
+			this->pCapas[i].pNeuronas[j].x = 1.0 / (1 + exp(-net));
 		}
 	}
 }
@@ -378,11 +378,63 @@ void PerceptronMulticapa::ejecutarAlgoritmoOnline(Datos * pDatosTrain, Datos * p
 	int numSinMejorar;
 	double testError = 0;
 
-	double validationError;
+	double validationError = 0;
+	double lastValidationError = 0;
+	int numSinMejorarValidacion = 0;
+	Datos * pDatosValidacion;
 
 	// Generar datos de validación
 	if(dValidacion > 0 && dValidacion < 1){
-		// .......
+		int numPatrones = pDatosTrain->nNumPatrones*this->dValidacion;
+		int * indicePatronesValidacion = vectorAleatoriosEnterosSinRepeticion(0,
+				pDatosTrain->nNumPatrones - 1, numPatrones);
+
+		Datos * pDatosValidacion = new Datos[1];
+		pDatosValidacion->nNumPatrones = numPatrones;
+		pDatosValidacion->entradas = new double*[pDatosValidacion->nNumPatrones];
+		pDatosValidacion->salidas = new double*[pDatosValidacion->nNumPatrones];
+
+		for(int i=0; i < pDatosValidacion->nNumPatrones; i++){
+			pDatosValidacion->entradas[i] = new double[pDatosTrain->nNumEntradas];
+			pDatosValidacion->salidas[i] = new double[pDatosTrain->nNumSalidas];
+		}
+
+		Datos * pDatosTrain2 = new Datos[1];
+		pDatosTrain2->nNumPatrones = pDatosTrain->nNumPatrones - numPatrones;
+		pDatosTrain2->entradas = new double*[pDatosTrain2->nNumPatrones];
+		pDatosTrain2->salidas = new double*[pDatosTrain2->nNumPatrones];
+
+		for(int i=0; i < pDatosTrain2->nNumPatrones; i++){
+			pDatosTrain2->entradas[i] = new double[pDatosTrain->nNumEntradas];
+			pDatosTrain2->salidas[i] = new double[pDatosTrain->nNumSalidas];
+		}
+
+		for(int i=0; i < pDatosValidacion->nNumPatrones; i++){
+			for(int j=0; j < pDatosValidacion->nNumEntradas; j++){
+				pDatosValidacion->entradas[i][j] = pDatosTrain->entradas[indicePatronesValidacion[i]][j];
+			}
+
+			for(int k=0; k < pDatosValidacion->nNumSalidas; k++){
+				pDatosValidacion->salidas[i][k] = pDatosTrain->salidas[indicePatronesValidacion[i]][k];
+			}
+		}
+
+
+		// Tengo que revisar esta parte de validacion
+		for(int i=0; i < pDatosTrain2->nNumPatrones; i++){
+			for(int j=0; j < pDatosTrain->nNumPatrones; j++){
+				if(!comprobarExistencia(indicePatronesValidacion, numPatrones, j)){
+					for(int k=0; k < pDatosTrain2->nNumEntradas; k++){
+						pDatosTrain2->entradas[i][k] = pDatosTrain->entradas[j][k];
+					}
+
+					for(int l=0; l < pDatosTrain2->nNumSalidas; l++){
+						pDatosTrain2->salidas[i][l] = pDatosTrain->salidas[j][l];
+					}
+				}
+			}
+		}
+
 	}
 
 
@@ -405,6 +457,26 @@ void PerceptronMulticapa::ejecutarAlgoritmoOnline(Datos * pDatosTrain, Datos * p
 			cout << "Salida porque no mejora el entrenamiento!!"<< endl;
 			restaurarPesos();
 			countTrain = maxiter;
+		}
+
+		if(dValidacion > 0 && dValidacion < 1){
+			validationError = this->test(pDatosValidacion);
+			if(countTrain == 0 || validationError < lastValidationError){
+				lastValidationError = trainError;
+				numSinMejorarValidacion = 0;
+			}
+			else if ((validationError - lastValidationError) < 0.00001){
+				numSinMejorarValidacion = 0;
+			}
+			else{
+				numSinMejorarValidacion++;
+			}
+
+			if(numSinMejorarValidacion == 50){
+				cout << "Early Stopping" << endl;
+				this->restaurarPesos();
+				countTrain = maxiter;
+			}
 		}
 
 		countTrain++;

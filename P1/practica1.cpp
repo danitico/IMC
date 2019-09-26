@@ -81,7 +81,7 @@ int main(int argc, char **argv) {
 		int *topologia = new int[3];
 		topologia[0] = pDatosTrain->nNumEntradas;
 		//for(int i=1; i<(capas+2-1); i++)
-		topologia[1] = 2;
+		topologia[1] = 10;
 		topologia[2] = pDatosTrain->nNumSalidas;
 
 		mlp.inicializar(3,topologia);

@@ -32,6 +32,16 @@ static int * vectorAleatoriosEnterosSinRepeticion(int minimo, int maximo, int cu
 
 };
 
+static bool comprobarExistencia(int * vector, int tamagno, int numero){
+	for(int i=0; i < tamagno; i++){
+		if(numero == vector[i]){
+			return true;
+		}
+	}
+
+	return false;
+};
+
 }
 
 

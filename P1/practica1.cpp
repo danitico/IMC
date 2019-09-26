@@ -22,32 +22,79 @@ using namespace std;
 
 int main(int argc, char **argv) {
     // Procesar los argumentos de la línea de comandos
-    bool Tflag = 0, wflag = 0, pflag = 0;
-    char *Tvalue = NULL, *wvalue = NULL;
-    int c;
+    bool tflag = 0, Tflag = 0, iflag = 0, lflag = 0, hflag = 0, eflag = 0, mflag = 0;
+    bool vflag = 0, dflag = 0, wflag = 0, pflag = 0;
+    char *Tvalue = NULL, *wvalue = NULL, *tvalue=NULL;
+    int c, ivalue=0, lvalue=0, hvalue=0, dvalue=0;
+    double evalue=0.0, mvalue=0.0, vvalue=0.0;
 
     opterr = 0;
 
     // a: opción que requiere un argumento
     // a:: el argumento requerido es opcional
-    while ((c = getopt(argc, argv, "T:w:p")) != -1)
+    while ((c = getopt(argc, argv, "t:T:i:l:h:e:m:v:d:w:p")) != -1)
     {
         // Se han añadido los parámetros necesarios para usar el modo opcional de predicción (kaggle).
         // Añadir el resto de parámetros que sean necesarios para la parte básica de las prácticas.
         switch(c){
-            case 'T':
+        	case 't':
+        		tflag = true;
+        		tvalue = optarg;
+        		break;
+
+        	case 'T':
                 Tflag = true;
                 Tvalue = optarg;
                 break;
+
+            case 'i':
+            	iflag = true;
+            	ivalue = atoi(optarg);
+            	break;
+
+            case 'l':
+            	lflag = true;
+            	lvalue = atoi(optarg);
+            	break;
+
+            case 'h':
+            	hflag = true;
+            	hvalue = atoi(optarg);
+            	break;
+
+            case 'e':
+            	eflag = true;
+            	evalue = atof(optarg);
+            	break;
+
+            case 'm':
+            	mflag = true;
+            	mvalue = atof(optarg);
+            	break;
+
+            case 'v':
+            	vflag = true;
+            	vvalue = atof(optarg);
+            	break;
+
+            case 'd'://
+            	dflag = true;
+            	dvalue = atoi(optarg);
+            	break;
+
             case 'w':
                 wflag = true;
                 wvalue = optarg;
                 break;
+
             case 'p':
                 pflag = true;
                 break;
+
             case '?':
-                if (optopt == 'T' || optopt == 'w' || optopt == 'p')
+                if (optopt == 't' || optopt == 'T' || optopt == 'i' || optopt == 'l'
+                		|| optopt == 'h' || optopt == 'e' || optopt == 'm' || optopt == 'v'
+                				|| optopt == 'd' || optopt == 'w')
                     fprintf (stderr, "La opción -%c requiere un argumento.\n", optopt);
                 else if (isprint (optopt))
                     fprintf (stderr, "Opción desconocida `-%c'.\n", optopt);
@@ -59,6 +106,11 @@ int main(int argc, char **argv) {
             default:
                 return EXIT_FAILURE;
         }
+    }
+
+    if(!tflag && !pflag){
+    	cout << "Se ha llamado mal al programa. Se necesita un fichero de entrenamiento" << endl;
+    	exit(-1);
     }
 
     if (!pflag) {
@@ -74,14 +126,55 @@ int main(int argc, char **argv) {
         // Lectura de datos de entrenamiento y test: llamar a mlp.leerDatos(...)
 
         Datos *pDatosTest, *pDatosTrain;
-        pDatosTrain = mlp.leerDatos("train_quake.dat");
-        pDatosTest = mlp.leerDatos("test_quake.dat");
+
+        if(!Tflag){
+            pDatosTrain = mlp.leerDatos(tvalue);
+            pDatosTest = mlp.leerDatos(tvalue);
+        }
+        else{
+        	pDatosTrain = mlp.leerDatos(tvalue);
+        	pDatosTest = mlp.leerDatos(Tvalue);
+        }
+
+        if(!iflag){
+        	ivalue = 1000;
+        }
+
+        if(!lflag){
+        	lvalue = 1;
+        }
+
+        if(!hflag){
+        	hvalue = 5;
+        }
+
+        if(!eflag){
+        	evalue = 0.1;
+        }
+
+        if(!mflag){
+        	mvalue = 0.9;
+        }
+
+        if(!vflag){
+        	vvalue = 0.0;
+        }
+
+        if(!dflag){
+        	dvalue = 1;
+        }
+
+        mlp.dEta = evalue;
+        mlp.dMu = mvalue;
+        mlp.dDecremento = dvalue;
+        mlp.dValidacion = vvalue;
 
 
-		int *topologia = new int[3];
+		int *topologia = new int[lvalue+2];
 		topologia[0] = pDatosTrain->nNumEntradas;
-		//for(int i=1; i<(capas+2-1); i++)
-		topologia[1] = 100;
+		for(int i=1; i<(lvalue+2-1); i++){
+			topologia[i] = hvalue;
+		}
 		topologia[2] = pDatosTrain->nNumSalidas;
 
 		mlp.inicializar(3,topologia);
@@ -99,7 +192,7 @@ int main(int argc, char **argv) {
         	cout << "SEMILLA " << semillas[i] << endl;
         	cout << "**********" << endl;
     		srand(semillas[i]);
-    		mlp.ejecutarAlgoritmoOnline(pDatosTrain,pDatosTest,1000,&(erroresTrain[i]),&(erroresTest[i]));
+    		mlp.ejecutarAlgoritmoOnline(pDatosTrain,pDatosTest,ivalue,&(erroresTrain[i]),&(erroresTest[i]));
     		cout << "Finalizamos => Error de test final: " << erroresTest[i] << endl;
 
             // (Opcional - Kaggle) Guardamos los pesos cada vez que encontremos un modelo mejor.
@@ -137,6 +230,14 @@ int main(int argc, char **argv) {
         cout << "*************" << endl;
         cout << "Error de entrenamiento (Media +- DT): " << mediaErrorTrain << " +- " << desviacionTipicaErrorTrain << endl;
         cout << "Error de test (Media +- DT):          " << mediaErrorTest << " +- " << desviacionTipicaErrorTest << endl;
+
+        delete pDatosTest;
+        delete pDatosTrain;
+        delete topologia;
+        delete erroresTest;
+        delete erroresTrain;
+
+
         return EXIT_SUCCESS;
     }
     else {

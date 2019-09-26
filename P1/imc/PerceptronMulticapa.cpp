@@ -80,9 +80,7 @@ PerceptronMulticapa::~PerceptronMulticapa() {
 void PerceptronMulticapa::liberarMemoria() {
 	for(int i=0; i < this->nNumCapas; i++){
 		if(i == 0){
-			for(int j=0; j < this->pCapas[0].nNumNeuronas; j++){
-				delete this->pCapas[0].pNeuronas;
-			}
+			delete this->pCapas[0].pNeuronas;
 		}
 		else{
 			for(int j=0; j < this->pCapas[i].nNumNeuronas; j++){

@@ -74,8 +74,8 @@ int main(int argc, char **argv) {
         // Lectura de datos de entrenamiento y test: llamar a mlp.leerDatos(...)
 
         Datos *pDatosTest, *pDatosTrain;
-        pDatosTrain = mlp.leerDatos("train_xor.dat");
-        pDatosTest = mlp.leerDatos("test_xor.dat");
+        pDatosTrain = mlp.leerDatos("train_sin.dat");
+        pDatosTest = mlp.leerDatos("test_sin.dat");
 
 
 		int *topologia = new int[3];

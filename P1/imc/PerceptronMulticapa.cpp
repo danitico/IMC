@@ -392,6 +392,8 @@ void PerceptronMulticapa::ejecutarAlgoritmoOnline(Datos * pDatosTrain, Datos * p
 				pDatosTrain->nNumPatrones - 1, (int)numPatrones);
 
 		pDatosValidacion->nNumPatrones = (int)numPatrones;
+		pDatosValidacion->nNumEntradas = pDatosTrain->nNumEntradas;
+		pDatosValidacion->nNumSalidas = pDatosTrain->nNumSalidas;
 		pDatosValidacion->entradas = new double*[pDatosValidacion->nNumPatrones];
 		pDatosValidacion->salidas = new double*[pDatosValidacion->nNumPatrones];
 
@@ -401,6 +403,8 @@ void PerceptronMulticapa::ejecutarAlgoritmoOnline(Datos * pDatosTrain, Datos * p
 		}
 
 		pDatosTrain2->nNumPatrones = pDatosTrain->nNumPatrones - (int)numPatrones;
+		pDatosTrain2->nNumEntradas = pDatosTrain->nNumEntradas;
+		pDatosTrain2->nNumSalidas = pDatosTrain->nNumSalidas;
 		pDatosTrain2->entradas = new double*[pDatosTrain2->nNumPatrones];
 		pDatosTrain2->salidas = new double*[pDatosTrain2->nNumPatrones];
 
@@ -415,13 +419,11 @@ void PerceptronMulticapa::ejecutarAlgoritmoOnline(Datos * pDatosTrain, Datos * p
 			}
 
 			for(int k=0; k < pDatosValidacion->nNumSalidas; k++){
-				cout << i << " " << k << " " << indicePatronesValidacion[i] << endl;
 				pDatosValidacion->salidas[i][k] = pDatosTrain->salidas[indicePatronesValidacion[i]][k];
 			}
 		}
 
 
-		// Tengo que revisar esta parte de validacion
 		int indice = 0;
 		for(int j=0; j < pDatosTrain->nNumPatrones; j++){
 			if(!comprobarExistencia(indicePatronesValidacion, (int)numPatrones, j)){
@@ -470,9 +472,8 @@ void PerceptronMulticapa::ejecutarAlgoritmoOnline(Datos * pDatosTrain, Datos * p
 
 		if(dValidacion > 0 && dValidacion < 1){
 			validationError = this->test(pDatosValidacion);
-			if(countTrain == 0 || validationError < lastValidationError){
-				lastValidationError = trainError;
-				numSinMejorarValidacion = 0;
+			if(countTrain == 0){
+				lastValidationError = validationError;
 			}
 			else if ((validationError - lastValidationError) < 0.00001){
 				numSinMejorarValidacion = 0;
@@ -480,6 +481,8 @@ void PerceptronMulticapa::ejecutarAlgoritmoOnline(Datos * pDatosTrain, Datos * p
 			else{
 				numSinMejorarValidacion++;
 			}
+
+			lastValidationError = validationError;
 
 			if(numSinMejorarValidacion == 50){
 				cout << "Early Stopping" << endl;

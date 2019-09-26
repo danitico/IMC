@@ -74,14 +74,14 @@ int main(int argc, char **argv) {
         // Lectura de datos de entrenamiento y test: llamar a mlp.leerDatos(...)
 
         Datos *pDatosTest, *pDatosTrain;
-        pDatosTrain = mlp.leerDatos("train_sin.dat");
-        pDatosTest = mlp.leerDatos("test_sin.dat");
+        pDatosTrain = mlp.leerDatos("train_quake.dat");
+        pDatosTest = mlp.leerDatos("test_quake.dat");
 
 
 		int *topologia = new int[3];
 		topologia[0] = pDatosTrain->nNumEntradas;
 		//for(int i=1; i<(capas+2-1); i++)
-		topologia[1] = 10;
+		topologia[1] = 100;
 		topologia[2] = pDatosTrain->nNumSalidas;
 
 		mlp.inicializar(3,topologia);
@@ -116,6 +116,22 @@ int main(int argc, char **argv) {
         double mediaErrorTrain = 0, desviacionTipicaErrorTrain = 0;
         
         // Calcular medias y desviaciones típicas de entrenamiento y test
+
+        for(int i=0; i<5; i++){
+        	mediaErrorTrain += erroresTrain[i];
+        	mediaErrorTest += erroresTest[i];
+        }
+
+        mediaErrorTrain /= 5;
+        mediaErrorTest /= 5;
+
+        for(int i=0; i<5; i++){
+        	desviacionTipicaErrorTrain += pow(erroresTrain[i] - mediaErrorTrain, 2);
+        	desviacionTipicaErrorTest += pow(erroresTest[i] - mediaErrorTest, 2);
+        }
+
+        desviacionTipicaErrorTrain = sqrt(desviacionTipicaErrorTrain / 5);
+        desviacionTipicaErrorTest = sqrt(desviacionTipicaErrorTest / 5);
 
         cout << "INFORME FINAL" << endl;
         cout << "*************" << endl;

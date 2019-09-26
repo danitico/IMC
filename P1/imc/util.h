@@ -35,7 +35,6 @@ static int * vectorAleatoriosEnterosSinRepeticion(int minimo, int maximo, int cu
 };
 
 static bool comprobarExistencia(int * vector, int tamagno, int numero){
-	std::cout << tamagno << std::endl;
 	for(int i=0; i < tamagno; i++){
 		if(numero == vector[i]){
 			return true;

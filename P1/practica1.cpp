@@ -175,9 +175,9 @@ int main(int argc, char **argv) {
 		for(int i=1; i<(lvalue+2-1); i++){
 			topologia[i] = hvalue;
 		}
-		topologia[2] = pDatosTrain->nNumSalidas;
+		topologia[lvalue+2-1] = pDatosTrain->nNumSalidas;
 
-		mlp.inicializar(3,topologia);
+		mlp.inicializar(lvalue+2,topologia);
 
 
 

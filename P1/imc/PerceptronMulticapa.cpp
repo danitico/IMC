@@ -101,7 +101,6 @@ void PerceptronMulticapa::liberarMemoria() {
 // Rellenar todos los pesos (w) aleatoriamente entre -1 y 1
 void PerceptronMulticapa::pesosAleatorios() {
 	for(int i=1; i < this->nNumCapas; i++){
-		std::cout << this->pCapas[i].nNumNeuronas << std::endl;
 		for(int j = 0; j < this->pCapas[i].nNumNeuronas; j++){
 			for(int k = 0; k < this->pCapas[i-1].nNumNeuronas + 1; k++){
 				this->pCapas[i].pNeuronas[j].w[k] =
@@ -386,6 +385,11 @@ void PerceptronMulticapa::ejecutarAlgoritmoOnline(Datos * pDatosTrain, Datos * p
 	// Generar datos de validación
 	if(dValidacion > 0 && dValidacion < 1){
 		double numPatrones = pDatosTrain->nNumPatrones*this->dValidacion;
+
+		if(numPatrones < 1){
+			numPatrones = 1.0;
+		}
+
 		int * indicePatronesValidacion = vectorAleatoriosEnterosSinRepeticion(0,
 				pDatosTrain->nNumPatrones - 1, (int)numPatrones);
 

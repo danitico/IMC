@@ -4,7 +4,6 @@
 *********************************************************************/
 
 #include "PerceptronMulticapa.h"
-#include "util.h"
 
 
 #include <iostream>
@@ -19,7 +18,6 @@
 using namespace imc;
 using namespace std;
 using namespace util;
-
 // ------------------------------
 // CONSTRUCTOR: Dar valor por defecto a todos los parámetros
 PerceptronMulticapa::PerceptronMulticapa(){
@@ -364,15 +362,15 @@ void PerceptronMulticapa::predecir(Datos* pDatosTest)
 // Ejecutar el algoritmo de entrenamiento durante un número de iteraciones, utilizando pDatosTrain
 // Una vez terminado, probar como funciona la red en pDatosTest
 // Tanto el error MSE de entrenamiento como el error MSE de test debe calcularse y almacenarse en errorTrain y errorTest
-void PerceptronMulticapa::ejecutarAlgoritmoOnline(Datos * pDatosTrain, Datos * pDatosTest, int maxiter, double *errorTrain, double *errorTest)
+void PerceptronMulticapa::ejecutarAlgoritmoOnline(Datos * pDatosTrain, Datos * pDatosTest, int maxiter, double *errorTrain, double *errorTest, int * indicePatronesValidacion, double numPatrones)
 {
 	int countTrain = 0;
 
 	// Inicialización de pesos
 	pesosAleatorios();
 
-	double minTrainError = 0;
-	int numSinMejorar;
+	double minTrainError = 0, auxMinTrainError = 0;
+	int numSinMejorar = 0;
 	double testError = 0;
 
 	double validationError = 0;
@@ -384,15 +382,6 @@ void PerceptronMulticapa::ejecutarAlgoritmoOnline(Datos * pDatosTrain, Datos * p
 
 	// Generar datos de validación
 	if(dValidacion > 0 && dValidacion < 1){
-		double numPatrones = pDatosTrain->nNumPatrones*this->dValidacion;
-
-		if(numPatrones < 1){
-			numPatrones = 1.0;
-		}
-
-		int * indicePatronesValidacion = vectorAleatoriosEnterosSinRepeticion(0,
-				pDatosTrain->nNumPatrones - 1, (int)numPatrones);
-
 		pDatosValidacion->nNumPatrones = (int)numPatrones;
 		pDatosValidacion->nNumEntradas = pDatosTrain->nNumEntradas;
 		pDatosValidacion->nNumSalidas = pDatosTrain->nNumSalidas;
@@ -450,59 +439,81 @@ void PerceptronMulticapa::ejecutarAlgoritmoOnline(Datos * pDatosTrain, Datos * p
 		if(this->dValidacion > 0 && this->dValidacion < 1){
 			entrenarOnline(pDatosTrain2);
 			trainError = test(pDatosTrain2);
+			validationError = this->test(pDatosValidacion);
+
+			if(countTrain==0){
+				minTrainError = trainError;
+				auxMinTrainError = trainError;
+				lastValidationError = validationError;
+				copiarPesos();
+				numSinMejorar = 0;
+			}
+			else if(trainError < minTrainError){
+				minTrainError = trainError;
+				numSinMejorar = 0;
+				if ((validationError - lastValidationError) < 0.00001){
+					numSinMejorarValidacion = 0;
+					auxMinTrainError = minTrainError;
+					copiarPesos();
+				}
+				else{
+					numSinMejorarValidacion++;
+				}
+			}
+			else if( (trainError-minTrainError) < 0.00001){
+				numSinMejorar = 0;
+			}
+			else{
+				numSinMejorar++;
+			}
+
+
+			if(numSinMejorar==50){
+				cout << "Salida porque no mejora el entrenamiento!!"<< endl;
+				restaurarPesos();
+				cout << test(pDatosTrain2) << endl;
+				break;
+			}
+			else if(numSinMejorarValidacion == 50){
+				cout << "Early Stopping" << endl;
+				this->restaurarPesos();
+				cout << test(pDatosTrain2) << endl;
+				minTrainError = auxMinTrainError;
+				break;
+			}
+
+			lastValidationError = validationError;
 		}
 		else{
 			entrenarOnline(pDatosTrain);
 			trainError = test(pDatosTrain);
-		}
 
-		if(countTrain==0 || trainError < minTrainError){
-			minTrainError = trainError;
-			copiarPesos();
-			numSinMejorar = 0;
-		}
-		else if( (trainError-minTrainError) < 0.00001)
-			numSinMejorar = 0;
-		else
-			numSinMejorar++;
-
-		if(numSinMejorar==50){
-			cout << "Salida porque no mejora el entrenamiento!!"<< endl;
-			restaurarPesos();
-			countTrain = maxiter;
-		}
-
-		if(dValidacion > 0 && dValidacion < 1){
-			validationError = this->test(pDatosValidacion);
-			if(countTrain == 0){
-				lastValidationError = validationError;
+			if(countTrain==0 || trainError < minTrainError){
+				minTrainError = trainError;
+				copiarPesos();
+				numSinMejorar = 0;
 			}
-			else if ((validationError - lastValidationError) < 0.00001){
-				numSinMejorarValidacion = 0;
+			else if( (trainError-minTrainError) < 0.00001){
+				numSinMejorar = 0;
 			}
 			else{
-				numSinMejorarValidacion++;
+				numSinMejorar++;
 			}
 
-			lastValidationError = validationError;
-
-			if(numSinMejorarValidacion == 50){
-				cout << "Early Stopping" << endl;
-				this->restaurarPesos();
-				countTrain = maxiter;
+			if(numSinMejorar==50){
+				cout << "Salida porque no mejora el entrenamiento!!"<< endl;
+				restaurarPesos();
+				break;
 			}
 		}
 
 		countTrain++;
 
-		// Comprobar condiciones de parada de validación y forzar
-		// OJO: en este caso debemos guardar el error de validación anterior, no el mínimo
-		// Por lo demás, la forma en que se debe comprobar la condición de parada es similar
-		// a la que se ha aplicado más arriba para el error de entrenamiento
-
 		cout << "Iteración " << countTrain << "\t Error de entrenamiento: " << trainError << "\t Error de validación: " << validationError << endl;
 
 	} while ( countTrain<maxiter );
+
+	cout << "Error train ----> " << minTrainError << endl;
 
 	cout << "PESOS DE LA RED" << endl;
 	cout << "===============" << endl;

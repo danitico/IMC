@@ -19,6 +19,7 @@
 
 using namespace imc;
 using namespace std;
+using namespace util;
 
 int main(int argc, char **argv) {
     // Procesar los argumentos de la línea de comandos
@@ -186,13 +187,29 @@ int main(int argc, char **argv) {
         int semillas[] = {100,200,300,400,500};
         double *erroresTest = new double[5];
         double *erroresTrain = new double[5];
+        double numPatrones=0.0;
+        int * indicePatronesValidacion = NULL;
         double mejorErrorTest = 1.0;
+
+        if(mlp.dValidacion > 0 && mlp.dValidacion < 1){
+			numPatrones = pDatosTrain->nNumPatrones*mlp.dValidacion;
+
+			if(numPatrones < 1){
+				numPatrones = 1.0;
+			}
+
+			srand(time(NULL));
+			indicePatronesValidacion = vectorAleatoriosEnterosSinRepeticion(0,
+					pDatosTrain->nNumPatrones - 1, (int)numPatrones);
+        }
+
         for(int i=0; i<5; i++){
         	cout << "**********" << endl;
         	cout << "SEMILLA " << semillas[i] << endl;
         	cout << "**********" << endl;
     		srand(semillas[i]);
-    		mlp.ejecutarAlgoritmoOnline(pDatosTrain,pDatosTest,ivalue,&(erroresTrain[i]),&(erroresTest[i]));
+    		mlp.ejecutarAlgoritmoOnline(pDatosTrain,pDatosTest,ivalue,&(erroresTrain[i]),&(erroresTest[i]),
+    				indicePatronesValidacion, numPatrones);
     		cout << "Finalizamos => Error de test final: " << erroresTest[i] << endl;
 
             // (Opcional - Kaggle) Guardamos los pesos cada vez que encontremos un modelo mejor.

@@ -11,8 +11,7 @@
 #include <iostream>
 
 namespace util{
-//la funbcion de pedro esta mal :(
-static int * vectorAleatoriosEnterosSinRepeticion(int minimo, int maximo, int cuantos){
+inline int * vectorAleatoriosEnterosSinRepeticion(int minimo, int maximo, int cuantos){
         int total = maximo-minimo+1;
         int* numerosPorElegir = new int[total];
         int* numerosElegidos = new int[cuantos];
@@ -34,7 +33,7 @@ static int * vectorAleatoriosEnterosSinRepeticion(int minimo, int maximo, int cu
 
 };
 
-static bool comprobarExistencia(int * vector, int tamagno, int numero){
+inline bool comprobarExistencia(int * vector, int tamagno, int numero){
 	for(int i=0; i < tamagno; i++){
 		if(numero == vector[i]){
 			return true;

@@ -306,6 +306,8 @@ Datos* PerceptronMulticapa::leerDatos(const char *archivo) {
 		}
 	}
 
+	f.close();
+
 	return datos;
 }
 

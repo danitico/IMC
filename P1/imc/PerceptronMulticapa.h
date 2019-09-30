@@ -116,8 +116,7 @@ public:
 	// Ejecutar el algoritmo de entrenamiento durante un número de iteraciones, utilizando pDatosTrain
      // Una vez terminado, probar como funciona la red en pDatosTest
      // Tanto el error MSE de entrenamiento como el error MSE de test debe calcularse y almacenarse en errorTrain y errorTest
-	void ejecutarAlgoritmoOnline(Datos * pDatosTrain, Datos * pDatosTest, int maxiter, double *errorTrain, double *errorTest, int * indicePatronesValidacion, double numPatrones);
-
+	void ejecutarAlgoritmoOnline(Datos * pDatosTrain, Datos * pDatosTest, int maxiter, double *errorTrain, double *errorTest, int * indicePatronesValidacion, double numPatrones, bool flag, int i);
 	//Guardar los pesos del modelo en un fichero de texto.
 	bool guardarPesos(const char * archivo);
 

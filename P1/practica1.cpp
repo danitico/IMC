@@ -24,7 +24,7 @@ using namespace util;
 int main(int argc, char **argv) {
     // Procesar los argumentos de la línea de comandos
     bool tflag = 0, Tflag = 0, iflag = 0, lflag = 0, hflag = 0, eflag = 0, mflag = 0;
-    bool vflag = 0, dflag = 0, wflag = 0, pflag = 0;
+    bool vflag = 0, dflag = 0, wflag = 0, pflag = 0, gflag = 0;
     char *Tvalue = NULL, *wvalue = NULL, *tvalue=NULL;
     int c, ivalue=0, lvalue=0, hvalue=0, dvalue=0;
     double evalue=0.0, mvalue=0.0, vvalue=0.0;
@@ -33,7 +33,7 @@ int main(int argc, char **argv) {
 
     // a: opción que requiere un argumento
     // a:: el argumento requerido es opcional
-    while ((c = getopt(argc, argv, "t:T:i:l:h:e:m:v:d:w:p")) != -1)
+    while ((c = getopt(argc, argv, "t:T:i:l:h:e:m:v:d:w:pg")) != -1)
     {
         // Se han añadido los parámetros necesarios para usar el modo opcional de predicción (kaggle).
         // Añadir el resto de parámetros que sean necesarios para la parte básica de las prácticas.
@@ -91,6 +91,10 @@ int main(int argc, char **argv) {
             case 'p':
                 pflag = true;
                 break;
+
+            case 'g':
+            	gflag = true;
+            	break;
 
             case '?':
                 if (optopt == 't' || optopt == 'T' || optopt == 'i' || optopt == 'l'
@@ -189,7 +193,9 @@ int main(int argc, char **argv) {
         double *erroresTrain = new double[5];
         double numPatrones=0.0;
         int * indicePatronesValidacion = NULL;
-        double mejorErrorTest = 1.0;
+        double mejorErrorTest = 1.0, mejorErrorTrain = 1.0;
+        int aux = 0;
+
 
         if(mlp.dValidacion > 0 && mlp.dValidacion < 1){
 			numPatrones = pDatosTrain->nNumPatrones*mlp.dValidacion;
@@ -208,9 +214,15 @@ int main(int argc, char **argv) {
         	cout << "SEMILLA " << semillas[i] << endl;
         	cout << "**********" << endl;
     		srand(semillas[i]);
+
     		mlp.ejecutarAlgoritmoOnline(pDatosTrain,pDatosTest,ivalue,&(erroresTrain[i]),&(erroresTest[i]),
-    				indicePatronesValidacion, numPatrones);
+    				indicePatronesValidacion, numPatrones, gflag, i);
     		cout << "Finalizamos => Error de test final: " << erroresTest[i] << endl;
+
+    		if(gflag && erroresTrain[i] <= mejorErrorTrain){
+    			mejorErrorTrain = erroresTrain[i];
+    			aux=i;
+    		}
 
             // (Opcional - Kaggle) Guardamos los pesos cada vez que encontremos un modelo mejor.
             if(wflag && erroresTest[i] <= mejorErrorTest)
@@ -229,6 +241,7 @@ int main(int argc, char **argv) {
 
         for(int i=0; i<5; i++){
         	mediaErrorTrain += erroresTrain[i];
+        	cout << erroresTrain[i] << endl;
         	mediaErrorTest += erroresTest[i];
         }
 
@@ -247,6 +260,10 @@ int main(int argc, char **argv) {
         cout << "*************" << endl;
         cout << "Error de entrenamiento (Media +- DT): " << mediaErrorTrain << " +- " << desviacionTipicaErrorTrain << endl;
         cout << "Error de test (Media +- DT):          " << mediaErrorTest << " +- " << desviacionTipicaErrorTest << endl;
+
+        if(gflag){
+        	cout << "La mejor semilla es la " << aux << endl;
+        }
 
         delete pDatosTest;
         delete pDatosTrain;

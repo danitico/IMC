@@ -364,7 +364,7 @@ void PerceptronMulticapa::predecir(Datos* pDatosTest)
 // Ejecutar el algoritmo de entrenamiento durante un número de iteraciones, utilizando pDatosTrain
 // Una vez terminado, probar como funciona la red en pDatosTest
 // Tanto el error MSE de entrenamiento como el error MSE de test debe calcularse y almacenarse en errorTrain y errorTest
-void PerceptronMulticapa::ejecutarAlgoritmoOnline(Datos * pDatosTrain, Datos * pDatosTest, int maxiter, double *errorTrain, double *errorTest, int * indicePatronesValidacion, double numPatrones)
+void PerceptronMulticapa::ejecutarAlgoritmoOnline(Datos * pDatosTrain, Datos * pDatosTest, int maxiter, double *errorTrain, double *errorTest, int * indicePatronesValidacion, double numPatrones, bool flag, int i)
 {
 	int countTrain = 0;
 
@@ -380,6 +380,11 @@ void PerceptronMulticapa::ejecutarAlgoritmoOnline(Datos * pDatosTrain, Datos * p
 	int numSinMejorarValidacion = 0;
 	Datos * pDatosValidacion = new Datos[1];
 	Datos * pDatosTrain2 = new Datos[1];
+	ofstream file;
+
+	if(flag){
+		file.open("semilla" + std::to_string(i) + ".txt");
+	}
 
 
 	// Generar datos de validación
@@ -437,10 +442,12 @@ void PerceptronMulticapa::ejecutarAlgoritmoOnline(Datos * pDatosTrain, Datos * p
 	// Aprendizaje del algoritmo
 	do {
 		double trainError = 0.0;
+		double testError = 0.0;
 
 		if(this->dValidacion > 0 && this->dValidacion < 1){
 			entrenarOnline(pDatosTrain2);
 			trainError = test(pDatosTrain2);
+			testError = test(pDatosTest);
 			validationError = this->test(pDatosValidacion);
 
 			if(countTrain==0){
@@ -489,6 +496,7 @@ void PerceptronMulticapa::ejecutarAlgoritmoOnline(Datos * pDatosTrain, Datos * p
 		else{
 			entrenarOnline(pDatosTrain);
 			trainError = test(pDatosTrain);
+			testError = test(pDatosTest);
 
 			if(countTrain==0 || trainError < minTrainError){
 				minTrainError = trainError;
@@ -511,9 +519,18 @@ void PerceptronMulticapa::ejecutarAlgoritmoOnline(Datos * pDatosTrain, Datos * p
 
 		countTrain++;
 
-		cout << "Iteración " << countTrain << "\t Error de entrenamiento: " << trainError << "\t Error de validación: " << validationError << endl;
+
+		cout << "Iteración " << countTrain << "\t Error de entrenamiento: " << trainError << "\t Error de validación: " << validationError << "\t Error de test: " << testError << endl;
+
+		if(flag){
+			file << trainError << " " << validationError << " " << testError << "\n";
+		}
 
 	} while ( countTrain<maxiter );
+
+	if(flag){
+		file.close();
+	}
 
 	cout << "Error train ----> " << minTrainError << endl;
 

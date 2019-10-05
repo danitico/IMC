@@ -106,7 +106,7 @@ public:
     // nl tiene el numero de capas y npl es un vector que contiene el número de neuronas por cada una de las capas
 	// tipo contiene el tipo de cada capa (0 => sigmoide, 1 => softmax)
     // Rellenar vector Capa* pCapas
-	int inicializar(int nl, int npl[], int tipo[]);
+	void inicializar(int nl, int npl[], int tipo[]);
 
 	// Leer una matriz de datos a partir de un nombre de fichero y devolverla
 	Datos* leerDatos(const char *archivo);

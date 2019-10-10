@@ -161,7 +161,7 @@ void PerceptronMulticapa::propagarEntradas() {
 	double *sumNet = new double[this->nNumCapas-1];
 
 	for(int i=1; i < this->nNumCapas; i++){
-		sumNet[i] = 0.0;
+		sumNet[i-1] = 0.0;
 		for(int j=0; j < this->pCapas[i].nNumNeuronas; j++){
 			net = 0.0;
 			for(int k=1; k < this->pCapas[i-1].nNumNeuronas + 1; k++){
@@ -175,13 +175,13 @@ void PerceptronMulticapa::propagarEntradas() {
 			}
 			else{
 				this->pCapas[i].pNeuronas[j].x = exp(net);
-				sumNet[i] += exp(net);
+				sumNet[i-1] += exp(net);
 			}
 		}
 
 		if(this->pCapas[i].tipo == 1){
 			for(int j=0; j < this->pCapas[i].nNumNeuronas; j++){
-				this->pCapas[i].pNeuronas[j].x /= sumNet[i];
+				this->pCapas[i].pNeuronas[j].x /= sumNet[i-1];
 			}
 		}
 	}
@@ -220,7 +220,7 @@ double PerceptronMulticapa::calcularErrorSalida(double* target, int funcionError
 void PerceptronMulticapa::retropropagarError(double* objetivo, int funcionError) {
 	for(int i=0; i < this->pCapas[this->nNumCapas - 1].nNumNeuronas; i++){
 		double out = this->pCapas[this->nNumCapas - 1].pNeuronas[i].x;
-		this->pCapas[this->nNumCapas - 1].pNeuronas[i].dX = 0;
+		this->pCapas[this->nNumCapas - 1].pNeuronas[i].dX = 0.0;
 
 		if(this->pCapas[this->nNumCapas -1].tipo == 0){
 			if(funcionError == 0){
@@ -233,18 +233,26 @@ void PerceptronMulticapa::retropropagarError(double* objetivo, int funcionError)
 			}
 		}
 		else{
+			int aux=0;
 			for(int j=0; j < this->pCapas[this->nNumCapas - 1].nNumNeuronas; j++){
+
+				if(i == j){
+					aux=1;
+				}
+				else{
+					aux=0;
+				}
+
 				if(funcionError == 0){
 					this->pCapas[this->nNumCapas - 1].pNeuronas[i].dX +=
-							-((objetivo[j]-this->pCapas[this->nNumCapas-1].pNeuronas[j].x)*out*
-									((int)i==j - objetivo[j]-this->pCapas[this->nNumCapas-1].pNeuronas[j].x));
+							-(objetivo[j]-this->pCapas[this->nNumCapas-1].pNeuronas[j].x)*out*
+									(aux - this->pCapas[this->nNumCapas-1].pNeuronas[j].x);
 				}
 				else{
 					this->pCapas[this->nNumCapas - 1].pNeuronas[i].dX +=
-							-((objetivo[j]/this->pCapas[this->nNumCapas-1].pNeuronas[j].x)*out*
-									((int)i==j - objetivo[j]-this->pCapas[this->nNumCapas-1].pNeuronas[j].x));
+							-(objetivo[j]/this->pCapas[this->nNumCapas-1].pNeuronas[j].x)*out*
+									(aux - this->pCapas[this->nNumCapas-1].pNeuronas[j].x);
 				}
-
 			}
 		}
 	}
@@ -307,14 +315,14 @@ void PerceptronMulticapa::ajustarPesos() {
 			for(int j=0; j < this->pCapas[i].nNumNeuronas; j++){
 				for(int k=1; k < this->pCapas[i-1].nNumNeuronas + 1; k++){
 					this->pCapas[i].pNeuronas[j].w[k] +=
-							(- (this->dEta*this->pCapas[i].pNeuronas[j].deltaW[k])/this->nNumPatronesTrain)
-							- (this->dMu*(this->dEta*this->pCapas[i].pNeuronas[j].ultimoDeltaW[k]))/this->nNumPatronesTrain;
+							- ( this->dEta*this->pCapas[i].pNeuronas[j].deltaW[k] ) /this->nNumPatronesTrain
+							- (this->dMu*(this->dEta*this->pCapas[i].pNeuronas[j].ultimoDeltaW[k])) /this->nNumPatronesTrain;
 
 					this->pCapas[i].pNeuronas[j].ultimoDeltaW[k] = this->pCapas[i].pNeuronas[j].deltaW[k];
 				}
 
 				this->pCapas[i].pNeuronas[j].w[0] +=
-						(- ( this->dEta*this->pCapas[i].pNeuronas[j].deltaW[0] ) /this->nNumPatronesTrain )
+						- ( this->dEta*this->pCapas[i].pNeuronas[j].deltaW[0] ) / this->nNumPatronesTrain
 						- (this->dMu*(this->dEta*this->pCapas[i].pNeuronas[j].ultimoDeltaW[0]))/this->nNumPatronesTrain;
 
 				this->pCapas[i].pNeuronas[j].ultimoDeltaW[0] = this->pCapas[i].pNeuronas[j].deltaW[0];
@@ -486,8 +494,21 @@ void PerceptronMulticapa::predecir(Datos* pDatosTest)
 // ------------------------------
 // Probar la red con un conjunto de datos y devolver el CCR
 double PerceptronMulticapa::testClassification(Datos* pDatosTest) {
+	int tamagno = this->pCapas[this->nNumCapas - 1].nNumNeuronas;
+	double *salidas = new double[tamagno];
+	double sum = 0;
 
-	return 0.0;
+	for(int i=0; i < pDatosTest->nNumPatrones; i++){
+		this->alimentarEntradas(pDatosTest->entradas[i]);
+		this->propagarEntradas();
+		this->recogerSalidas(salidas);
+
+		if(argmax(salidas, tamagno) == argmax(pDatosTest->salidas[i], tamagno)){
+			sum++;
+		}
+	}
+
+	return (sum/pDatosTest->nNumPatrones)*100;
 }
 
 // ------------------------------
@@ -495,7 +516,7 @@ double PerceptronMulticapa::testClassification(Datos* pDatosTest) {
 // Una vez terminado, probar como funciona la red en pDatosTest
 // Tanto el error MSE de entrenamiento como el error MSE de test debe calcularse y almacenarse en errorTrain y errorTest
 // funcionError=1 => EntropiaCruzada // funcionError=0 => MSE
-void PerceptronMulticapa::ejecutarAlgoritmo(Datos * pDatosTrain, Datos * pDatosTest, int maxiter, double *errorTrain, double *errorTest, double *ccrTrain, double *ccrTest, int funcionError)
+void PerceptronMulticapa::ejecutarAlgoritmo(Datos * pDatosTrain, Datos * pDatosTest, int maxiter, double *errorTrain, double *errorTest, double *ccrTrain, double *ccrTest, int funcionError, int * indicePatronesValidacion, double numPatrones)
 {
 	int countTrain = 0;
 
@@ -504,41 +525,154 @@ void PerceptronMulticapa::ejecutarAlgoritmo(Datos * pDatosTrain, Datos * pDatosT
 
 	double minTrainError = 0;
 	int numSinMejorar = 0;
-	double testError = 0;
 	nNumPatronesTrain = pDatosTrain->nNumPatrones;
 
-	Datos * pDatosValidacion = NULL;
-	double validationError = 0, previousValidationError = 0;
+	double validationError = 0, lastValidationError = 0;
+	double auxMinTrainError = 0.0;
 	int numSinMejorarValidacion = 0;
+	Datos * pDatosValidacion = new Datos[1];
+	Datos * pDatosTrain2 = new Datos[1];
 
 	// Generar datos de validación
 	if(dValidacion > 0 && dValidacion < 1){
+		pDatosValidacion->nNumPatrones = (int)numPatrones;
+		pDatosValidacion->nNumEntradas = pDatosTrain->nNumEntradas;
+		pDatosValidacion->nNumSalidas = pDatosTrain->nNumSalidas;
+		pDatosValidacion->entradas = new double*[pDatosValidacion->nNumPatrones];
+		pDatosValidacion->salidas = new double*[pDatosValidacion->nNumPatrones];
 
+		for(int i=0; i < pDatosValidacion->nNumPatrones; i++){
+			pDatosValidacion->entradas[i] = new double[pDatosTrain->nNumEntradas];
+			pDatosValidacion->salidas[i] = new double[pDatosTrain->nNumSalidas];
+		}
+
+		pDatosTrain2->nNumPatrones = pDatosTrain->nNumPatrones - (int)numPatrones;
+		pDatosTrain2->nNumEntradas = pDatosTrain->nNumEntradas;
+		pDatosTrain2->nNumSalidas = pDatosTrain->nNumSalidas;
+		pDatosTrain2->entradas = new double*[pDatosTrain2->nNumPatrones];
+		pDatosTrain2->salidas = new double*[pDatosTrain2->nNumPatrones];
+
+		for(int i=0; i < pDatosTrain2->nNumPatrones; i++){
+			pDatosTrain2->entradas[i] = new double[pDatosTrain->nNumEntradas];
+			pDatosTrain2->salidas[i] = new double[pDatosTrain->nNumSalidas];
+		}
+
+		for(int i=0; i < pDatosValidacion->nNumPatrones; i++){
+			for(int j=0; j < pDatosValidacion->nNumEntradas; j++){
+				pDatosValidacion->entradas[i][j] = pDatosTrain->entradas[indicePatronesValidacion[i]][j];
+			}
+
+			for(int k=0; k < pDatosValidacion->nNumSalidas; k++){
+				pDatosValidacion->salidas[i][k] = pDatosTrain->salidas[indicePatronesValidacion[i]][k];
+			}
+		}
+
+
+		int indice = 0;
+		for(int j=0; j < pDatosTrain->nNumPatrones; j++){
+			if(!comprobarExistencia(indicePatronesValidacion, (int)numPatrones, j)){
+				for(int k=0; k < pDatosTrain2->nNumEntradas; k++){
+					pDatosTrain2->entradas[indice][k] = pDatosTrain->entradas[j][k];
+				}
+
+				for(int l=0; l < pDatosTrain2->nNumSalidas; l++){
+					pDatosTrain2->salidas[indice][l] = pDatosTrain->salidas[j][l];
+				}
+				indice++;
+			}
+		}
 	}
+
+
+	if(dValidacion > 0 && dValidacion < 1){
+		if(!this->bOnline){
+			this->nNumPatronesTrain = pDatosTrain2->nNumPatrones;
+		}
+	}
+	else{
+		if(!this->bOnline){
+			this->nNumPatronesTrain = pDatosTrain->nNumPatrones;
+		}
+	}
+
 
 	// Aprendizaje del algoritmo
 	do {
 
-		entrenar(pDatosTrain,funcionError);
+		double trainError = 0.0;
+		double testError = 0.0;
 
-		double trainError = test(pDatosTrain,funcionError);
-		if(countTrain==0 || trainError < minTrainError){
-			minTrainError = trainError;
-			copiarPesos();
-			numSinMejorar = 0;
+		if(this->dValidacion > 0 && this->dValidacion < 1){
+			entrenar(pDatosTrain2, funcionError);
+			trainError = test(pDatosTrain2, funcionError);
+			testError = test(pDatosTest, funcionError);
+			validationError = this->test(pDatosValidacion, funcionError);
+
+			if(countTrain==0){
+				minTrainError = trainError;
+				auxMinTrainError = trainError;
+				lastValidationError = validationError;
+				copiarPesos();
+				numSinMejorar = 0;
+			}
+			else if(trainError < minTrainError){
+				minTrainError = trainError;
+				numSinMejorar = 0;
+				if ((validationError - lastValidationError) < 0.00001){
+					numSinMejorarValidacion = 0;
+					auxMinTrainError = minTrainError;
+					copiarPesos();
+				}
+				else{
+					numSinMejorarValidacion++;
+				}
+			}
+			else if( (trainError-minTrainError) < 0.00001){
+				numSinMejorar = 0;
+			}
+			else{
+				numSinMejorar++;
+			}
+
+
+			if(numSinMejorar==50){
+				cout << "Salida porque no mejora el entrenamiento!!"<< endl;
+				restaurarPesos();
+				break;
+			}
+			else if(numSinMejorarValidacion == 50){
+				cout << "Early Stopping" << endl;
+				this->restaurarPesos();
+				minTrainError = auxMinTrainError;
+				break;
+			}
+
+			lastValidationError = validationError;
 		}
-		else if( (trainError-minTrainError) < 0.00001)
-			numSinMejorar = 0;
-		else
-			numSinMejorar++;
+		else{
+			entrenar(pDatosTrain, funcionError);
+			trainError = test(pDatosTrain, funcionError);
+			testError = test(pDatosTest, funcionError);
 
-		if(numSinMejorar==50){
-			cout << "Salida porque no mejora el entrenamiento!!"<< endl;
-			restaurarPesos();
-			countTrain = maxiter;
+			if(countTrain==0 || trainError < minTrainError){
+				minTrainError = trainError;
+				copiarPesos();
+				numSinMejorar = 0;
+			}
+			else if( (trainError-minTrainError) < 0.00001){
+				numSinMejorar = 0;
+			}
+			else{
+				numSinMejorar++;
+			}
+
+			if(numSinMejorar==50){
+				cout << "Salida porque no mejora el entrenamiento!!"<< endl;
+				restaurarPesos();
+				break;
+			}
 		}
 
-		testError = test(pDatosTest,funcionError);
 		countTrain++;
 
 		// Comprobar condiciones de parada de validación y forzar
@@ -547,8 +681,6 @@ void PerceptronMulticapa::ejecutarAlgoritmo(Datos * pDatosTrain, Datos * pDatosT
 
 	} while ( countTrain<maxiter );
 
-	if ( (numSinMejorarValidacion!=50) && (numSinMejorar!=50))
-		restaurarPesos();
 
 	cout << "PESOS DE LA RED" << endl;
 	cout << "===============" << endl;

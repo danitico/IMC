@@ -16,6 +16,7 @@
 #include <string.h>
 #include <math.h>
 #include "imc/PerceptronMulticapa.h"
+#include "imc/util.h"
 
 using namespace imc;
 using namespace std;
@@ -23,7 +24,7 @@ using namespace std;
 int main(int argc, char **argv) {
     // Procesar los argumentos de la línea de comandos
     bool tflag = 0, Tflag = 0, iflag = 0, lflag = 0, hflag = 0, eflag = 0, mflag = 0;
-    bool vflag = 0, dflag = 0, oflag = 0, fflag = 0, wflag = 0, pflag = 0, gflag = 0;
+    bool vflag = 0, dflag = 0, oflag = 0, fflag = 0, wflag = 0, pflag = 0;
     bool sflag = 0;
     char *Tvalue = NULL, *wvalue = NULL, *tvalue=NULL;
     int c, ivalue=0, lvalue=0, hvalue=0, dvalue=0, fvalue = 0;
@@ -33,7 +34,7 @@ int main(int argc, char **argv) {
 
     // a: opción que requiere un argumento
     // a:: el argumento requerido es opcional
-    while ((c = getopt(argc, argv, "t:T:i:l:h:e:m:v:d:of:sw:pg")) != -1)
+    while ((c = getopt(argc, argv, "t:T:i:l:h:e:m:v:d:of:sw:p")) != -1)
     {
         // Se han añadido los parámetros necesarios para usar el modo opcional de predicción (kaggle).
         // Añadir el resto de parámetros que sean necesarios para la parte básica de las prácticas.
@@ -105,9 +106,9 @@ int main(int argc, char **argv) {
                 pflag = true;
                 break;
 
-            case 'g':
-            	gflag = true;
-            	break;
+//            case 'g':
+//            	gflag = true;
+//            	break;
 
             case '?':
                 if (optopt == 't' || optopt == 'T' || optopt == 'i' || optopt == 'l'
@@ -183,12 +184,17 @@ int main(int argc, char **argv) {
         	dvalue = 1;
         }
 
+        if(!fflag){
+        	fvalue = 0;
+        }
+
 
         mlp.dEta = evalue;
         mlp.dMu = mvalue;
         mlp.dDecremento = dvalue;
         mlp.dValidacion = vvalue;
         mlp.bOnline = oflag;
+
 
     	// Inicializar vector topología
     	int *topologia = new int[lvalue+2];
@@ -203,7 +209,6 @@ int main(int argc, char **argv) {
     	}
     	topologia[lvalue+2-1] = pDatosTrain->nNumSalidas;
     	tipo[lvalue+2-1] = (int)sflag;
-
     	mlp.inicializar(lvalue+2,topologia, tipo);
 
 
@@ -213,20 +218,37 @@ int main(int argc, char **argv) {
         double *erroresTrain = new double[5];
         double *ccrs = new double[5];
         double *ccrsTrain = new double[5];
-        double mejorErrorTest = 1.0;
+        double mejorErrorTest = 1.0, numPatrones = 0.0;
+        int * indicePatronesValidacion = NULL;
+
+
+        if(mlp.dValidacion > 0 && mlp.dValidacion < 1){
+			numPatrones = pDatosTrain->nNumPatrones*mlp.dValidacion;
+
+			if(numPatrones < 1){
+				numPatrones = 1.0;
+			}
+
+			srand(time(NULL));
+			indicePatronesValidacion = util::vectorAleatoriosEnterosSinRepeticion(0,
+					pDatosTrain->nNumPatrones - 1, (int)numPatrones);
+        }
+
+
+
         for(int i=0; i<5; i++){
         	cout << "**********" << endl;
         	cout << "SEMILLA " << semillas[i] << endl;
         	cout << "**********" << endl;
     		srand(semillas[i]);
-    		mlp.ejecutarAlgoritmo(pDatosTrain,pDatosTest,iteraciones,&(erroresTrain[i]),&(errores[i]),&(ccrsTrain[i]),&(ccrs[i]),error);
+    		mlp.ejecutarAlgoritmo(pDatosTrain,pDatosTest,ivalue,&(erroresTrain[i]),&(errores[i]),&(ccrsTrain[i]),&(ccrs[i]),fvalue, indicePatronesValidacion, numPatrones);
     		cout << "Finalizamos => CCR de test final: " << ccrs[i] << endl;
 
             // (Opcional - Kaggle) Guardamos los pesos cada vez que encontremos un modelo mejor.
-            if(wflag && erroresTest[i] <= mejorErrorTest)
+            if(wflag && errores[i] <= mejorErrorTest)
             {
                 mlp.guardarPesos(wvalue);
-                mejorErrorTest = erroresTest[i];
+                mejorErrorTest = errores[i];
             }
 
         }

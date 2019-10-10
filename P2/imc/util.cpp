@@ -32,6 +32,30 @@ int * vectorAleatoriosEnterosSinRepeticion(int minimo, int maximo, int cuantos){
 
 };
 
+int argmax(double * vector, int tamagno){
+	double max = vector[0];
+	int indexmax = 0;
+
+	for(int i=1; i < tamagno; i++){
+		if(vector[i] > max){
+			max = vector[i];
+			indexmax = 1;
+		}
+	}
+
+	return indexmax;
+}
+
+bool comprobarExistencia(int * vector, int tamagno, int numero){
+	for(int i=0; i < tamagno; i++){
+		if(numero == vector[i]){
+			return true;
+		}
+	}
+
+	return false;
+}
+
 }
 
 

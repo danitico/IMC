@@ -259,8 +259,29 @@ int main(int argc, char **argv) {
         double mediaCCR = 0, desviacionTipicaCCR = 0;
         double mediaCCRTrain = 0, desviacionTipicaCCRTrain = 0;
 
-        // Calcular medias y desviaciones típicas de entrenamiento y test
+        for(int i=0; i<5; i++){
+        	mediaErrorTrain += erroresTrain[i];
+        	mediaError += errores[i];
+        	mediaCCR += ccrs[i];
+        	mediaCCRTrain += ccrsTrain[i];
+        }
 
+        mediaErrorTrain /= 5;
+        mediaError /= 5;
+        mediaCCR /= 5;
+        mediaCCRTrain /= 5;
+
+        for(int i=0; i<5; i++){
+        	desviacionTipicaErrorTrain += pow(erroresTrain[i] - mediaErrorTrain, 2);
+        	desviacionTipicaError += pow(errores[i] - mediaError, 2);
+        	desviacionTipicaCCRTrain += pow(ccrsTrain[i] - mediaCCRTrain, 2);
+        	desviacionTipicaCCR += pow(ccrsTrain[i] - mediaCCR, 2);
+        }
+
+        desviacionTipicaErrorTrain = sqrt(desviacionTipicaErrorTrain / 5);
+        desviacionTipicaError = sqrt(desviacionTipicaError / 5);
+        desviacionTipicaCCRTrain = sqrt(desviacionTipicaCCRTrain / 5);
+        desviacionTipicaCCR = sqrt(desviacionTipicaCCR / 5);
 
         cout << "HEMOS TERMINADO TODAS LAS SEMILLAS" << endl;
 

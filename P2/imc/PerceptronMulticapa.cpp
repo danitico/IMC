@@ -311,19 +311,22 @@ void PerceptronMulticapa::ajustarPesos() {
 		}
 	}
 	else{
+		double modifiedEta = 0.0;
+
 		for(int i=1; i < this->nNumCapas; i++){
+			modifiedEta = pow(this->dDecremento,-(this->nNumCapas - 1 - i))*this->dEta;
 			for(int j=0; j < this->pCapas[i].nNumNeuronas; j++){
 				for(int k=1; k < this->pCapas[i-1].nNumNeuronas + 1; k++){
 					this->pCapas[i].pNeuronas[j].w[k] +=
-							- ( this->dEta*this->pCapas[i].pNeuronas[j].deltaW[k] ) /this->nNumPatronesTrain
-							- (this->dMu*(this->dEta*this->pCapas[i].pNeuronas[j].ultimoDeltaW[k])) /this->nNumPatronesTrain;
+							- ( modifiedEta*this->pCapas[i].pNeuronas[j].deltaW[k] ) /this->nNumPatronesTrain
+							- (this->dMu*(modifiedEta*this->pCapas[i].pNeuronas[j].ultimoDeltaW[k])) /this->nNumPatronesTrain;
 
 					this->pCapas[i].pNeuronas[j].ultimoDeltaW[k] = this->pCapas[i].pNeuronas[j].deltaW[k];
 				}
 
 				this->pCapas[i].pNeuronas[j].w[0] +=
-						- ( this->dEta*this->pCapas[i].pNeuronas[j].deltaW[0] ) / this->nNumPatronesTrain
-						- (this->dMu*(this->dEta*this->pCapas[i].pNeuronas[j].ultimoDeltaW[0]))/this->nNumPatronesTrain;
+						- ( modifiedEta*this->pCapas[i].pNeuronas[j].deltaW[0] ) / this->nNumPatronesTrain
+						- (this->dMu*(modifiedEta*this->pCapas[i].pNeuronas[j].ultimoDeltaW[0]))/this->nNumPatronesTrain;
 
 				this->pCapas[i].pNeuronas[j].ultimoDeltaW[0] = this->pCapas[i].pNeuronas[j].deltaW[0];
 			}

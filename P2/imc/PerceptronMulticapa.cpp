@@ -204,9 +204,7 @@ double PerceptronMulticapa::calcularErrorSalida(double* target, int funcionError
 	else{
 		double sum = 0.0;
 		for(int i=0; i < this->pCapas[this->nNumCapas -1].nNumNeuronas; i++){
-			if(target[i] != 0 && this->pCapas[this->nNumCapas - 1].pNeuronas[i].x > 0.0){
-				sum += target[i]*log(this->pCapas[this->nNumCapas - 1].pNeuronas[i].x);
-			}
+			sum += target[i]*log(this->pCapas[this->nNumCapas - 1].pNeuronas[i].x);
 		}
 
 		return sum / (double)this->pCapas[this->nNumCapas - 1].nNumNeuronas;
@@ -476,7 +474,7 @@ void PerceptronMulticapa::predecir(Datos* pDatosTest)
 	int numSalidas = pCapas[nNumCapas-1].nNumNeuronas;
 	double * salidas = new double[numSalidas];
 	
-	cout << "Id,Predicted" << endl;
+	cout << "Id,Category" << endl;
 	
 	for (i=0; i<pDatosTest->nNumPatrones; i++){
 
@@ -705,7 +703,7 @@ void PerceptronMulticapa::ejecutarAlgoritmo(Datos * pDatosTrain, Datos * pDatosT
 
 	}
 
-	*errorTest=test(pDatosTest,funcionError);;
+	*errorTest=test(pDatosTest,funcionError);
 	*errorTrain=minTrainError;
 	*ccrTest = testClassification(pDatosTest);
 	*ccrTrain = testClassification(pDatosTrain);

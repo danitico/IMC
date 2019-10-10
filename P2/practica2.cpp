@@ -275,7 +275,7 @@ int main(int argc, char **argv) {
         	desviacionTipicaErrorTrain += pow(erroresTrain[i] - mediaErrorTrain, 2);
         	desviacionTipicaError += pow(errores[i] - mediaError, 2);
         	desviacionTipicaCCRTrain += pow(ccrsTrain[i] - mediaCCRTrain, 2);
-        	desviacionTipicaCCR += pow(ccrsTrain[i] - mediaCCR, 2);
+        	desviacionTipicaCCR += pow(ccrs[i] - mediaCCR, 2);
         }
 
         desviacionTipicaErrorTrain = sqrt(desviacionTipicaErrorTrain / 5);
@@ -291,6 +291,7 @@ int main(int argc, char **argv) {
         cout << "Error de test (Media +- DT): " << mediaError << " +- " << desviacionTipicaError << endl;
         cout << "CCR de entrenamiento (Media +- DT): " << mediaCCRTrain << " +- " << desviacionTipicaCCRTrain << endl;
         cout << "CCR de test (Media +- DT): " << mediaCCR << " +- " << desviacionTipicaCCR << endl;
+
     	return EXIT_SUCCESS;
     } else {
 

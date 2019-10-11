@@ -39,7 +39,7 @@ int argmax(double * vector, int tamagno){
 	for(int i=1; i < tamagno; i++){
 		if(vector[i] > max){
 			max = vector[i];
-			indexmax = 1;
+			indexmax = i;
 		}
 	}
 

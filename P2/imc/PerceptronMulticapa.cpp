@@ -497,7 +497,7 @@ void PerceptronMulticapa::predecir(Datos* pDatosTest)
 double PerceptronMulticapa::testClassification(Datos* pDatosTest) {
 	int tamagno = this->pCapas[this->nNumCapas - 1].nNumNeuronas;
 	double *salidas = new double[tamagno];
-	double sum = 0;
+	int sum = 0;
 
 	for(int i=0; i < pDatosTest->nNumPatrones; i++){
 		this->alimentarEntradas(pDatosTest->entradas[i]);
@@ -509,7 +509,7 @@ double PerceptronMulticapa::testClassification(Datos* pDatosTest) {
 		}
 	}
 
-	return (sum/pDatosTest->nNumPatrones)*100;
+	return ((double)sum/pDatosTest->nNumPatrones)*100;
 }
 
 // ------------------------------

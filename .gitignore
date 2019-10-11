@@ -1,8 +1,11 @@
-Debug/practica1
-Debug/practica2
+P1/Debug/practica1
+P2/Debug/practica2
+*.d
 *.png
 *.txt
 *.eps
+*.csv
+*.sh
 *.o
 *.dat
 *.tar.gz

@@ -691,8 +691,11 @@ void PerceptronMulticapa::ejecutarAlgoritmo(Datos * pDatosTrain, Datos * pDatosT
 
 		std::cout << "Iteración " << countTrain << "\t Error de entrenamiento: " << trainError << "\t Error de test: " << testError << "\t Error de validacion: " << validationError << endl;
 
-		if(gflag){
+		if(gflag && this->dValidacion > 0 && this->dValidacion < 1){
 			file << valueCcrTrain << " " << valueCcrTest << " " << valueCcrValidacion << "\n";
+		}
+		else if(gflag){
+			file << valueCcrTrain << " " << valueCcrTest << "\n";
 		}
 
 	} while ( countTrain<maxiter );

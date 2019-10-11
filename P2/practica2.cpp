@@ -24,7 +24,7 @@ using namespace std;
 int main(int argc, char **argv) {
     // Procesar los argumentos de la línea de comandos
     bool tflag = 0, Tflag = 0, iflag = 0, lflag = 0, hflag = 0, eflag = 0, mflag = 0;
-    bool vflag = 0, dflag = 0, oflag = 0, fflag = 0, wflag = 0, pflag = 0;
+    bool vflag = 0, dflag = 0, oflag = 0, fflag = 0, wflag = 0, pflag = 0, gflag = 0;
     bool sflag = 0;
     char *Tvalue = NULL, *wvalue = NULL, *tvalue=NULL;
     int c, ivalue=0, lvalue=0, hvalue=0, dvalue=0, fvalue = 0;
@@ -106,9 +106,9 @@ int main(int argc, char **argv) {
                 pflag = true;
                 break;
 
-//            case 'g':
-//            	gflag = true;
-//            	break;
+            case 'g':
+            	gflag = true;
+            	break;
 
             case '?':
                 if (optopt == 't' || optopt == 'T' || optopt == 'i' || optopt == 'l'
@@ -128,7 +128,7 @@ int main(int argc, char **argv) {
     }
 
     if(!tflag && !pflag){
-    	cout << "Se ha llamado mal al programa. Se necesita un fichero de entrenamiento" << endl;
+    	std::cout << "Se ha llamado mal al programa. Se necesita un fichero de entrenamiento" << endl;
     	exit(-1);
     }
 
@@ -237,12 +237,12 @@ int main(int argc, char **argv) {
 
 
         for(int i=0; i<5; i++){
-        	cout << "**********" << endl;
-        	cout << "SEMILLA " << semillas[i] << endl;
-        	cout << "**********" << endl;
+        	std::cout << "**********" << endl;
+        	std::cout << "SEMILLA " << semillas[i] << endl;
+        	std::cout << "**********" << endl;
     		srand(semillas[i]);
-    		mlp.ejecutarAlgoritmo(pDatosTrain,pDatosTest,ivalue,&(erroresTrain[i]),&(errores[i]),&(ccrsTrain[i]),&(ccrs[i]),fvalue, indicePatronesValidacion, numPatrones);
-    		cout << "Finalizamos => CCR de test final: " << ccrs[i] << endl;
+    		mlp.ejecutarAlgoritmo(pDatosTrain,pDatosTest,ivalue,&(erroresTrain[i]),&(errores[i]),&(ccrsTrain[i]),&(ccrs[i]),fvalue, indicePatronesValidacion, numPatrones, gflag, i);
+    		std::cout << "Finalizamos => CCR de test final: " << ccrs[i] << endl;
 
             // (Opcional - Kaggle) Guardamos los pesos cada vez que encontremos un modelo mejor.
             if(wflag && errores[i] <= mejorErrorTest)
@@ -283,14 +283,14 @@ int main(int argc, char **argv) {
         desviacionTipicaCCRTrain = sqrt(desviacionTipicaCCRTrain / 5);
         desviacionTipicaCCR = sqrt(desviacionTipicaCCR / 5);
 
-        cout << "HEMOS TERMINADO TODAS LAS SEMILLAS" << endl;
+        std::cout << "HEMOS TERMINADO TODAS LAS SEMILLAS" << endl;
 
-    	cout << "INFORME FINAL" << endl;
-    	cout << "*************" << endl;
-        cout << "Error de entrenamiento (Media +- DT): " << mediaErrorTrain << " +- " << desviacionTipicaErrorTrain << endl;
-        cout << "Error de test (Media +- DT): " << mediaError << " +- " << desviacionTipicaError << endl;
-        cout << "CCR de entrenamiento (Media +- DT): " << mediaCCRTrain << " +- " << desviacionTipicaCCRTrain << endl;
-        cout << "CCR de test (Media +- DT): " << mediaCCR << " +- " << desviacionTipicaCCR << endl;
+    	std::cout << "INFORME FINAL" << endl;
+    	std::cout << "*************" << endl;
+        std::cout << "Error de entrenamiento (Media +- DT): " << mediaErrorTrain << " +- " << desviacionTipicaErrorTrain << endl;
+        std::cout << "Error de test (Media +- DT): " << mediaError << " +- " << desviacionTipicaError << endl;
+        std::cout << "CCR de entrenamiento (Media +- DT): " << mediaCCRTrain << " +- " << desviacionTipicaCCRTrain << endl;
+        std::cout << "CCR de test (Media +- DT): " << mediaCCR << " +- " << desviacionTipicaCCR << endl;
 
     	return EXIT_SUCCESS;
     } else {

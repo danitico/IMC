@@ -474,7 +474,7 @@ void PerceptronMulticapa::predecir(Datos* pDatosTest)
 	int numSalidas = pCapas[nNumCapas-1].nNumNeuronas;
 	double * salidas = new double[numSalidas];
 	
-	cout << "Id,Category" << endl;
+	std::cout << "Id,Category" << endl;
 	
 	for (i=0; i<pDatosTest->nNumPatrones; i++){
 
@@ -487,7 +487,7 @@ void PerceptronMulticapa::predecir(Datos* pDatosTest)
 			if (salidas[j] >= salidas[maxIndex])
 				maxIndex = j;
 		
-		cout << i << "," << maxIndex << endl;
+		std::cout << i << "," << maxIndex << endl;
 
 	}
 }
@@ -517,7 +517,7 @@ double PerceptronMulticapa::testClassification(Datos* pDatosTest) {
 // Una vez terminado, probar como funciona la red en pDatosTest
 // Tanto el error MSE de entrenamiento como el error MSE de test debe calcularse y almacenarse en errorTrain y errorTest
 // funcionError=1 => EntropiaCruzada // funcionError=0 => MSE
-void PerceptronMulticapa::ejecutarAlgoritmo(Datos * pDatosTrain, Datos * pDatosTest, int maxiter, double *errorTrain, double *errorTest, double *ccrTrain, double *ccrTest, int funcionError, int * indicePatronesValidacion, double numPatrones)
+void PerceptronMulticapa::ejecutarAlgoritmo(Datos * pDatosTrain, Datos * pDatosTest, int maxiter, double *errorTrain, double *errorTest, double *ccrTrain, double *ccrTest, int funcionError, int * indicePatronesValidacion, double numPatrones, bool gflag, int i)
 {
 	int countTrain = 0;
 
@@ -533,6 +533,11 @@ void PerceptronMulticapa::ejecutarAlgoritmo(Datos * pDatosTrain, Datos * pDatosT
 	int numSinMejorarValidacion = 0;
 	Datos * pDatosValidacion = new Datos[1];
 	Datos * pDatosTrain2 = new Datos[1];
+	ofstream file;
+
+	if(gflag){
+		file.open("semilla" + std::to_string(i) + ".txt");
+	}
 
 	// Generar datos de validación
 	if(dValidacion > 0 && dValidacion < 1){
@@ -602,12 +607,18 @@ void PerceptronMulticapa::ejecutarAlgoritmo(Datos * pDatosTrain, Datos * pDatosT
 
 		double trainError = 0.0;
 		double testError = 0.0;
+		double valueCcrTrain = 0.0;
+		double valueCcrTest = 0.0;
+		double valueCcrValidacion = 0.0;
 
 		if(this->dValidacion > 0 && this->dValidacion < 1){
 			entrenar(pDatosTrain2, funcionError);
 			trainError = test(pDatosTrain2, funcionError);
 			testError = test(pDatosTest, funcionError);
 			validationError = this->test(pDatosValidacion, funcionError);
+			valueCcrTrain = testClassification(pDatosTrain2);
+			valueCcrTest = testClassification(pDatosTest);
+			valueCcrValidacion = testClassification(pDatosValidacion);
 
 			if(countTrain==0){
 				minTrainError = trainError;
@@ -637,12 +648,12 @@ void PerceptronMulticapa::ejecutarAlgoritmo(Datos * pDatosTrain, Datos * pDatosT
 
 
 			if(numSinMejorar==50){
-				cout << "Salida porque no mejora el entrenamiento!!"<< endl;
+				std::cout << "Salida porque no mejora el entrenamiento!!"<< endl;
 				restaurarPesos();
 				break;
 			}
 			else if(numSinMejorarValidacion == 50){
-				cout << "Early Stopping" << endl;
+				std::cout << "Early Stopping" << endl;
 				this->restaurarPesos();
 				minTrainError = auxMinTrainError;
 				break;
@@ -654,6 +665,8 @@ void PerceptronMulticapa::ejecutarAlgoritmo(Datos * pDatosTrain, Datos * pDatosT
 			entrenar(pDatosTrain, funcionError);
 			trainError = test(pDatosTrain, funcionError);
 			testError = test(pDatosTest, funcionError);
+			valueCcrTrain = testClassification(pDatosTrain);
+			valueCcrTest = testClassification(pDatosTest);
 
 			if(countTrain==0 || trainError < minTrainError){
 				minTrainError = trainError;
@@ -668,7 +681,7 @@ void PerceptronMulticapa::ejecutarAlgoritmo(Datos * pDatosTrain, Datos * pDatosT
 			}
 
 			if(numSinMejorar==50){
-				cout << "Salida porque no mejora el entrenamiento!!"<< endl;
+				std::cout << "Salida porque no mejora el entrenamiento!!"<< endl;
 				restaurarPesos();
 				break;
 			}
@@ -676,19 +689,25 @@ void PerceptronMulticapa::ejecutarAlgoritmo(Datos * pDatosTrain, Datos * pDatosT
 
 		countTrain++;
 
-		// Comprobar condiciones de parada de validación y forzar
+		std::cout << "Iteración " << countTrain << "\t Error de entrenamiento: " << trainError << "\t Error de test: " << testError << "\t Error de validacion: " << validationError << endl;
 
-		cout << "Iteración " << countTrain << "\t Error de entrenamiento: " << trainError << "\t Error de test: " << testError << "\t Error de validacion: " << validationError << endl;
+		if(gflag){
+			file << valueCcrTrain << " " << valueCcrTest << " " << valueCcrValidacion << "\n";
+		}
 
 	} while ( countTrain<maxiter );
 
+	if(gflag){
+		file.close();
+	}
 
-	cout << "PESOS DE LA RED" << endl;
-	cout << "===============" << endl;
+
+	std::cout << "PESOS DE LA RED" << endl;
+	std::cout << "===============" << endl;
 	imprimirRed();
 
-	cout << "Salida Esperada Vs Salida Obtenida (test)" << endl;
-	cout << "=========================================" << endl;
+	std::cout << "Salida Esperada Vs Salida Obtenida (test)" << endl;
+	std::cout << "=========================================" << endl;
 	for(int i=0; i<pDatosTest->nNumPatrones; i++){
 		double* prediccion = new double[pDatosTest->nNumSalidas];
 
@@ -697,8 +716,8 @@ void PerceptronMulticapa::ejecutarAlgoritmo(Datos * pDatosTrain, Datos * pDatosT
 		propagarEntradas();
 		recogerSalidas(prediccion);
 		for(int j=0; j<pDatosTest->nNumSalidas; j++)
-			cout << pDatosTest->salidas[i][j] << " -- " << prediccion[j] << " \\\\ " ;
-		cout << endl;
+			std::cout << pDatosTest->salidas[i][j] << " -- " << prediccion[j] << " \\\\ " ;
+		std::cout << endl;
 		delete[] prediccion;
 
 	}

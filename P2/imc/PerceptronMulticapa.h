@@ -129,7 +129,7 @@ public:
     // Una vez terminado, probar como funciona la red en pDatosTest
     // Tanto el error MSE de entrenamiento como el error MSE de test debe calcularse y almacenarse en errorTrain y errorTest
 	// funcionError=1 => EntropiaCruzada // funcionError=0 => MSE
-	void ejecutarAlgoritmo(Datos * pDatosTrain, Datos * pDatosTest, int maxiter, double *errorTrain, double *errorTest, double *ccrTrain, double *ccrTest, int funcionError, int * indicePatronesValidacion, double numPatrones);
+	void ejecutarAlgoritmo(Datos * pDatosTrain, Datos * pDatosTest, int maxiter, double *errorTrain, double *errorTest, double *ccrTrain, double *ccrTest, int funcionError, int * indicePatronesValidacion, double numPatrones, bool gflag, int i);
 
 	//Guardar los pesos del modelo en un fichero de texto.
 	bool guardarPesos(const char * archivo);

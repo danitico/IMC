@@ -223,7 +223,7 @@ int main(int argc, char **argv) {
         double *ccrs = new double[5];
         double *ccrsTrain = new double[5];
         int ***confusion = NULL, **mejorConfusion = NULL;
-        double mejorErrorTest = 1.0, numPatrones = 0.0, mejorccr = -1.0;
+        double mejorErrorTest = 1.0, numPatrones = 0.0, mejorccr = -1.0, aux = 0;
         int * indicePatronesValidacion = NULL;
 
         if(cflag){
@@ -277,11 +277,13 @@ int main(int argc, char **argv) {
             if(cflag && ccrs[i] > mejorccr){
                 mejorccr = ccrs[i];
                 mejorConfusion = confusion[i];
+                aux = i;
             }
 
         }
 
         if(cflag){
+            std::cout << "La mejor matriz de confusión es de la semilla" << aux << std::endl;
             for(int i=0; i < pDatosTrain->nNumSalidas; i++){
                 for (int j = 0; j < pDatosTrain->nNumSalidas; j++){
                     std::cout << mejorConfusion[i][j] << " ";

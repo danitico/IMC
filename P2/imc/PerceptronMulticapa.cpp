@@ -494,7 +494,7 @@ void PerceptronMulticapa::predecir(Datos* pDatosTest)
 
 // ------------------------------
 // Probar la red con un conjunto de datos y devolver el CCR
-double PerceptronMulticapa::testClassification(Datos* pDatosTest) {
+double PerceptronMulticapa::testClassification(Datos* pDatosTest, int **confusion) {
 	int tamagno = this->pCapas[this->nNumCapas - 1].nNumNeuronas;
 	double *salidas = new double[tamagno];
 	int sum = 0;
@@ -504,7 +504,14 @@ double PerceptronMulticapa::testClassification(Datos* pDatosTest) {
 		this->propagarEntradas();
 		this->recogerSalidas(salidas);
 
-		if(argmax(salidas, tamagno) == argmax(pDatosTest->salidas[i], tamagno)){
+		int predicted = argmax(salidas, tamagno);
+		int realValue = argmax(pDatosTest->salidas[i], tamagno);
+
+		if(confusion != NULL){
+			confusion[realValue][predicted]++;
+		}
+
+		if(predicted == realValue){
 			sum++;
 		}
 	}
@@ -517,7 +524,8 @@ double PerceptronMulticapa::testClassification(Datos* pDatosTest) {
 // Una vez terminado, probar como funciona la red en pDatosTest
 // Tanto el error MSE de entrenamiento como el error MSE de test debe calcularse y almacenarse en errorTrain y errorTest
 // funcionError=1 => EntropiaCruzada // funcionError=0 => MSE
-void PerceptronMulticapa::ejecutarAlgoritmo(Datos * pDatosTrain, Datos * pDatosTest, int maxiter, double *errorTrain, double *errorTest, double *ccrTrain, double *ccrTest, int funcionError, int * indicePatronesValidacion, double numPatrones, bool gflag, int i)
+void PerceptronMulticapa::ejecutarAlgoritmo(Datos * pDatosTrain, Datos * pDatosTest, int maxiter, double *errorTrain, double *errorTest, double *ccrTrain, double *ccrTest, int funcionError, 
+											int * indicePatronesValidacion, double numPatrones, bool gflag, int i, int **confusion)
 {
 	int countTrain = 0;
 
@@ -727,7 +735,7 @@ void PerceptronMulticapa::ejecutarAlgoritmo(Datos * pDatosTrain, Datos * pDatosT
 
 	*errorTest=test(pDatosTest,funcionError);
 	*errorTrain=minTrainError;
-	*ccrTest = testClassification(pDatosTest);
+	*ccrTest = testClassification(pDatosTest, confusion);
 	*ccrTrain = testClassification(pDatosTrain);
 
 }

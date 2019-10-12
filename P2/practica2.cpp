@@ -25,7 +25,7 @@ int main(int argc, char **argv) {
     // Procesar los argumentos de la línea de comandos
     bool tflag = 0, Tflag = 0, iflag = 0, lflag = 0, hflag = 0, eflag = 0, mflag = 0;
     bool vflag = 0, dflag = 0, oflag = 0, fflag = 0, wflag = 0, pflag = 0, gflag = 0;
-    bool sflag = 0;
+    bool sflag = 0, cflag = 0;
     char *Tvalue = NULL, *wvalue = NULL, *tvalue=NULL;
     int c, ivalue=0, lvalue=0, hvalue=0, dvalue=0, fvalue = 0;
     double evalue=0.0, mvalue=0.0, vvalue=0.0;
@@ -34,7 +34,7 @@ int main(int argc, char **argv) {
 
     // a: opción que requiere un argumento
     // a:: el argumento requerido es opcional
-    while ((c = getopt(argc, argv, "t:T:i:l:h:e:m:v:d:of:sw:p")) != -1)
+    while ((c = getopt(argc, argv, "t:T:i:l:h:e:m:v:d:of:sw:pc")) != -1)
     {
         // Se han añadido los parámetros necesarios para usar el modo opcional de predicción (kaggle).
         // Añadir el resto de parámetros que sean necesarios para la parte básica de las prácticas.
@@ -109,6 +109,10 @@ int main(int argc, char **argv) {
             case 'g':
             	gflag = true;
             	break;
+
+            case 'c':
+                cflag = true;
+                break;
 
             case '?':
                 if (optopt == 't' || optopt == 'T' || optopt == 'i' || optopt == 'l'
@@ -218,8 +222,26 @@ int main(int argc, char **argv) {
         double *erroresTrain = new double[5];
         double *ccrs = new double[5];
         double *ccrsTrain = new double[5];
-        double mejorErrorTest = 1.0, numPatrones = 0.0;
+        int ***confusion = NULL, **mejorConfusion = NULL;
+        double mejorErrorTest = 1.0, numPatrones = 0.0, mejorccr = -1.0;
         int * indicePatronesValidacion = NULL;
+
+        if(cflag){
+            confusion = new int**[5]();
+            mejorConfusion = new int*[pDatosTrain->nNumSalidas];
+
+            for(int i=0; i < 5; i++){
+                confusion[i] = new int*[pDatosTrain->nNumSalidas]();
+
+                for(int j=0; j < pDatosTrain->nNumSalidas; j++){
+                    confusion[i][j] = new int[pDatosTrain->nNumSalidas]();
+                }
+            }
+
+            for(int i=0; i < pDatosTrain->nNumSalidas; i++){
+                mejorConfusion[i] = new int[pDatosTrain->nNumSalidas]();
+            }
+        }
 
 
         if(mlp.dValidacion > 0 && mlp.dValidacion < 1){
@@ -241,7 +263,8 @@ int main(int argc, char **argv) {
         	std::cout << "SEMILLA " << semillas[i] << endl;
         	std::cout << "**********" << endl;
     		srand(semillas[i]);
-    		mlp.ejecutarAlgoritmo(pDatosTrain,pDatosTest,ivalue,&(erroresTrain[i]),&(errores[i]),&(ccrsTrain[i]),&(ccrs[i]),fvalue, indicePatronesValidacion, numPatrones, gflag, i);
+    		mlp.ejecutarAlgoritmo(pDatosTrain,pDatosTest,ivalue,&(erroresTrain[i]),&(errores[i]),&(ccrsTrain[i]),&(ccrs[i]),fvalue, 
+                                    indicePatronesValidacion, numPatrones, gflag, i, confusion[i]);
     		std::cout << "Finalizamos => CCR de test final: " << ccrs[i] << endl;
 
             // (Opcional - Kaggle) Guardamos los pesos cada vez que encontremos un modelo mejor.
@@ -251,6 +274,23 @@ int main(int argc, char **argv) {
                 mejorErrorTest = errores[i];
             }
 
+            if(cflag && ccrs[i] > mejorccr){
+                mejorccr = ccrs[i];
+                mejorConfusion = confusion[i];
+            }
+
+        }
+
+        if(cflag){
+            for(int i=0; i < pDatosTrain->nNumSalidas; i++){
+                for (int j = 0; j < pDatosTrain->nNumSalidas; j++){
+                    std::cout << mejorConfusion[i][j] << " ";
+                }
+                std::cout << std::endl;
+            }
+
+            delete confusion;
+            delete mejorConfusion;
         }
 
 

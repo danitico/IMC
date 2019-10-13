@@ -263,8 +263,15 @@ int main(int argc, char **argv) {
         	std::cout << "SEMILLA " << semillas[i] << endl;
         	std::cout << "**********" << endl;
     		srand(semillas[i]);
-    		mlp.ejecutarAlgoritmo(pDatosTrain,pDatosTest,ivalue,&(erroresTrain[i]),&(errores[i]),&(ccrsTrain[i]),&(ccrs[i]),fvalue, 
+            if(cflag){
+                mlp.ejecutarAlgoritmo(pDatosTrain,pDatosTest,ivalue,&(erroresTrain[i]),&(errores[i]),&(ccrsTrain[i]),&(ccrs[i]),fvalue, 
                                     indicePatronesValidacion, numPatrones, gflag, i, confusion[i]);
+            }
+            else{
+                mlp.ejecutarAlgoritmo(pDatosTrain,pDatosTest,ivalue,&(erroresTrain[i]),&(errores[i]),&(ccrsTrain[i]),&(ccrs[i]),fvalue, 
+                                    indicePatronesValidacion, numPatrones, gflag, i);
+            }
+    		
     		std::cout << "Finalizamos => CCR de test final: " << ccrs[i] << endl;
 
             // (Opcional - Kaggle) Guardamos los pesos cada vez que encontremos un modelo mejor.

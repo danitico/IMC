@@ -703,7 +703,7 @@ void PerceptronMulticapa::ejecutarAlgoritmo(Datos * pDatosTrain, Datos * pDatosT
 			file << valueCcrTrain << " " << valueCcrTest << " " << valueCcrValidacion << "\n";
 		}
 		else if(gflag){
-			file << valueCcrTrain << " " << valueCcrTest << "\n";
+			file << countTrain << " " << valueCcrTrain << " " << valueCcrTest << " " <<  "a" << "\n";
 		}
 
 	} while ( countTrain<maxiter );

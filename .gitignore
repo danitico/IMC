@@ -9,3 +9,7 @@ P2/Debug/practica2
 *.o
 *.dat
 *.tar.gz
+P3/bin
+P3/include
+P3/lib
+P3/share

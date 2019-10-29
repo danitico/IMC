@@ -8,7 +8,6 @@ Created on Wed Oct 28 12:37:04 2016
 
 # TODO Incluir todos los import necesarios
 import pickle
-import click
 import os
 
 @click.command()

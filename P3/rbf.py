@@ -9,17 +9,30 @@ Created on Wed Oct 28 12:37:04 2016
 # TODO Incluir todos los import necesarios
 import pickle
 import os
+import click
+import arff
+import numpy as np
+
 
 @click.command()
-@click.option('--train_file', '-t', default=None, required=False,
+@click.option('--train_file', '-t', default=None, required=True, type=str, show_default=True,
               help=u'Fichero con los datos de entrenamiento.')
-
-# TODO incluir el resto de parámetros...
-
+@click.option('--test_file', '-T', default=None, required=False, type=str, show_default=True,
+              help=u'Fichero con los datos de generalización.')
+@click.option('--classification', '-c', required=False, type=bool, is_flag=True, show_default=True, default=False,
+              help=u'Indica si el problema es de clasificación.')
+@click.option('--ratio_rbf', '-r', default=0.1, required=False, type=float, show_default=True,
+              help=u'Ratio de neuronas por patrón de entrenamiento.')
+@click.option('--l2', '-l', required=False, type=bool, is_flag=True, show_default=True, default=False,
+              help=u'Indica si se utiliza regularización L2')
+@click.option('--eta', '-e', required=False, type=float, default=1e-2, show_default=True,
+              help=u'Valor del parámetro eta')
+@click.option('--outputs', '-o', required=False, type=int, default=1, show_default=True,
+              help=u'Número de columnas de salidas que tiene el conjunto de datos')
 @click.option('--model_file', '-m', default="", show_default=True,
-              help=u'Fichero en el que se guardará o desde el que se cargará el modelo (si existe el flag p).') # KAGGLE
+              help=u'Fichero en el que se guardará o desde el que se cargará el modelo (si existe el flag p).')  # KAGGLE
 @click.option('--pred', '-p', is_flag=True, default=False, show_default=True,
-              help=u'Activar el modo de predicción.') # KAGGLE
+              help=u'Activar el modo de predicción.')  # KAGGLE
 def entrenar_rbf_total(train_file, test_file, classification, ratio_rbf, l2, eta, outputs, model_file, pred):
     """ Modelo de aprendizaje supervisado mediante red neuronal de tipo RBF.
         Ejecución de 5 semillas.
@@ -35,18 +48,24 @@ def entrenar_rbf_total(train_file, test_file, classification, ratio_rbf, l2, eta
         test_mses = np.empty(5)
         test_ccrs = np.empty(5)
 
-        for s in range(1,6,1):
+        train_inputs, train_outputs, test_inputs, test_outputs = lectura_datos(train_file,
+                                                                               test_file,
+                                                                               outputs)
+
+        for s in range(0, 5):
             print("-----------")
-            print("Semilla: %d" % s)
+            print("Semilla: %d" % int(s+1))
             print("-----------")
-            np.random.seed(s)
-            train_mses[s-1], test_mses[s-1], train_ccrs[s-1], test_ccrs[s-1] = \
-                entrenar_rbf(train_file, test_file, classification, ratio_rbf, l2, eta, outputs, \
-                             model_file and "{}/{}.pickle".format(model_file, s//100) or "")
-            print("MSE de entrenamiento: %f" % train_mses[s-1])
-            print("MSE de test: %f" % test_mses[s-1])
-            print("CCR de entrenamiento: %.2f%%" % train_ccrs[s-1])
-            print("CCR de test: %.2f%%" % test_ccrs[s-1])
+            np.random.seed(s + 1)
+            train_mses[s], test_mses[s], train_ccrs[s], test_ccrs[s] =\
+                entrenar_rbf(train_inputs, train_outputs, test_inputs, test_outputs,
+                             classification, ratio_rbf, l2, eta, outputs,
+                             model_file and "{}/{}.pickle".format(model_file, s // 100) or "")
+
+            print("MSE de entrenamiento: %f" % train_mses[s])
+            print("MSE de test: %f" % test_mses[s])
+            print("CCR de entrenamiento: %.2f%%" % train_ccrs[s])
+            print("CCR de test: %.2f%%" % test_ccrs[s])
 
         print("*********************")
         print("Resumen de resultados")
@@ -80,12 +99,15 @@ def entrenar_rbf_total(train_file, test_file, classification, ratio_rbf, l2, eta
             print(s)
 
 
-def entrenar_rbf(train_file, test_file, classification, ratio_rbf, l2, eta, outputs, model_file=""):
+def entrenar_rbf(train_inputs, train_outputs, test_inputs, test_outputs, classification, ratio_rbf, l2, eta, outputs,
+                 model_file=""):
     """ Modelo de aprendizaje supervisado mediante red neuronal de tipo RBF.
         Una única ejecución.
         Recibe los siguientes parámetros:
-            - train_file: nombre del fichero de entrenamiento.
-            - test_file: nombre del fichero de test.
+            - train_inputs: Datos de los atributos de entrenamiento
+            - train_outputs: Etiquetas de los datos de entrenamiento
+            - test_inputs: Datos de los atributos de generalización
+            - test_ouputs: Etiquetas de los datos de generalización
             - classification: True si el problema es de clasificacion.
             - ratio_rbf: Ratio (en tanto por uno) de neuronas RBF con 
               respecto al total de patrones.
@@ -107,17 +129,14 @@ def entrenar_rbf(train_file, test_file, classification, ratio_rbf, l2, eta, outp
             - test_ccr: Error de clasificación en test. 
               En el caso de regresión, devolvemos un cero.
     """
-    train_inputs, train_outputs, test_inputs, test_outputs = lectura_datos(train_file, 
-                                                                           test_file,
-                                                                           outputs)
 
-    #TODO: Obtener num_rbf a partir de ratio_rbf
-    print("Número de RBFs utilizadas: %d" %(num_rbf))
-    kmedias, distancias, centros = clustering(classification, train_inputs, 
+    num_rbf = int(train_inputs.shape[0]*ratio_rbf)
+    print("Número de RBFs utilizadas: %d" % (num_rbf))
+    kmedias, distancias, centros = clustering(classification, train_inputs,
                                               train_outputs, num_rbf)
-    
+
     radios = calcular_radios(centros, num_rbf)
-    
+
     matriz_r = calcular_matriz_r(distancias, radios)
 
     if not classification:
@@ -165,7 +184,7 @@ def entrenar_rbf(train_file, test_file, classification, ratio_rbf, l2, eta, outp
 
     return train_mse, test_mse, train_ccr, test_ccr
 
-    
+
 def lectura_datos(fichero_train, fichero_test, outputs):
     """ Realiza la lectura de datos.
         Recibe los siguientes parámetros:
@@ -184,8 +203,19 @@ def lectura_datos(fichero_train, fichero_test, outputs):
               test.
     """
 
-    #TODO: Completar el código de la función
+    datosarchivotrain = arff.load(open(fichero_train))
+    datosarchivotest = arff.load(open(fichero_test))
+
+    datatrain = np.array(datosarchivotrain['data'])
+    datatest = np.array(datosarchivotest['data'])
+
+    train_inputs = datatrain[:, 0:-outputs]
+    train_outputs = datatrain[:, datatrain.shape[1]-1:datatrain.shape[1]+outputs]
+    test_inputs = datatest[:, 0:-outputs]
+    test_outputs = datatest[:, datatest.shape[1]-1:datatest.shape[1]+outputs]
+
     return train_inputs, train_outputs, test_inputs, test_outputs
+
 
 def inicializar_centroides_clas(train_inputs, train_outputs, num_rbf):
     """ Inicializa los centroides para el caso de clasificación.
@@ -201,9 +231,17 @@ def inicializar_centroides_clas(train_inputs, train_outputs, num_rbf):
             - centroides: matriz con todos los centroides iniciales
                           (num_rbf x num_entradas).
     """
-    
-    #TODO: Completar el código de la función
+
+    labels, percentage = np.unique(train_outputs, return_counts=True)
+    percentage = percentage / train_inputs.shape[0]
+    numCentroids = num_rbf*percentage
+    numCentroids = numCentroids.round(0)
+
+    for i in labels:
+
+    # TODO: Completar el código de la función
     return centroides
+
 
 def clustering(clasificacion, train_inputs, train_outputs, num_rbf):
     """ Realiza el proceso de clustering. En el caso de la clasificación, se
@@ -223,9 +261,17 @@ def clustering(clasificacion, train_inputs, train_outputs, num_rbf):
             - centros: matriz (num_rbf x num_entradas) con los centroides 
               obtenidos tras el proceso de clustering.
     """
+	
+    if clasificacion:
+        centros = inicializar_centroides_clas(train_inputs, train_outputs, num_rbf)
+#	else:
+#		centros = # TODO Random
 
-    #TODO: Completar el código de la función
+
+
+    # TODO: Completar el código de la función
     return kmedias, distancias, centros
+
 
 def calcular_radios(centros, num_rbf):
     """ Calcula el valor de los radios tras el clustering.
@@ -236,8 +282,9 @@ def calcular_radios(centros, num_rbf):
             - radios: vector (num_rbf) con el radio de cada RBF.
     """
 
-    #TODO: Completar el código de la función
+    # TODO: Completar el código de la función
     return radios
+
 
 def calcular_matriz_r(distancias, radios):
     """ Devuelve el valor de activación de cada neurona para cada patrón 
@@ -253,8 +300,9 @@ def calcular_matriz_r(distancias, radios):
               valores a 1, que actuará como sesgo.
     """
 
-    #TODO: Completar el código de la función
+    # TODO: Completar el código de la función
     return matriz_r
+
 
 def invertir_matriz_regresion(matriz_r, train_outputs):
     """ Devuelve el vector de coeficientes obtenidos para el caso de la 
@@ -271,8 +319,9 @@ def invertir_matriz_regresion(matriz_r, train_outputs):
               coeficiente de salida para cada rbf.
     """
 
-    #TODO: Completar el código de la función
+    # TODO: Completar el código de la función
     return coeficientes
+
 
 def logreg_clasificacion(matriz_r, train_outputs, eta, l2):
     """ Devuelve el objeto de tipo regresión logística obtenido a partir de la
@@ -293,7 +342,7 @@ def logreg_clasificacion(matriz_r, train_outputs, eta, l2):
               entrenado.
     """
 
-    #TODO: Completar el código de la función
+    # TODO: Completar el código de la función
     return logreg
 
 

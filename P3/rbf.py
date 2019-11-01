@@ -12,6 +12,9 @@ import os
 import click
 import arff
 import numpy as np
+import random
+from scipy import spatial
+from sklearn.cluster import KMeans
 
 
 @click.command()
@@ -211,8 +214,13 @@ def lectura_datos(fichero_train, fichero_test, outputs):
 
     train_inputs = datatrain[:, 0:-outputs]
     train_outputs = datatrain[:, datatrain.shape[1]-1:datatrain.shape[1]+outputs]
+    train_inputs = train_inputs.astype(np.float32)
+    train_outputs = train_outputs.astype(np.float32)
+
     test_inputs = datatest[:, 0:-outputs]
     test_outputs = datatest[:, datatest.shape[1]-1:datatest.shape[1]+outputs]
+    test_inputs = test_inputs.astype(np.float32)
+    test_outputs = test_outputs.astype(np.float32)
 
     return train_inputs, train_outputs, test_inputs, test_outputs
 
@@ -237,9 +245,17 @@ def inicializar_centroides_clas(train_inputs, train_outputs, num_rbf):
     numCentroids = num_rbf*percentage
     numCentroids = numCentroids.round(0)
 
-    for i in labels:
+    centroides = np.empty(0)
 
-    # TODO: Completar el código de la función
+    for i, j in zip(labels, range(len(labels))):
+        aux = np.where(train_outputs == i)[0]
+        indices = random.sample(list(aux), int(numCentroids[j]))
+        chosen = np.take(train_inputs, indices, axis=0)
+        if j==0:
+            centroides = np.copy(chosen)
+        else:
+            centroides = np.append(centroides, chosen, axis=0)
+
     return centroides
 
 
@@ -261,15 +277,22 @@ def clustering(clasificacion, train_inputs, train_outputs, num_rbf):
             - centros: matriz (num_rbf x num_entradas) con los centroides 
               obtenidos tras el proceso de clustering.
     """
-	
+
     if clasificacion:
-        centros = inicializar_centroides_clas(train_inputs, train_outputs, num_rbf)
-#	else:
-#		centros = # TODO Random
+        centros_iniciales = inicializar_centroides_clas(train_inputs, train_outputs, num_rbf)
+    else:
+        centros_iniciales = np.take(train_inputs, random.sample(range(len(train_inputs)), num_rbf), axis=0)
 
+    kmedias = KMeans(n_clusters=num_rbf, init=centros_iniciales, n_init=1, max_iter=500)
+    kmedias.fit(train_inputs)
 
+    centros = kmedias.cluster_centers_
+    distancias = np.zeros(shape=(train_inputs.shape[0], num_rbf))
 
-    # TODO: Completar el código de la función
+    for i in range(train_inputs.shape[0]):
+        for j in range(num_rbf):
+            distancias[i,j] = spatial.distance.euclidean(train_inputs[i], centros[j])
+
     return kmedias, distancias, centros
 
 

@@ -149,12 +149,7 @@ def entrenar_rbf(train_inputs, train_outputs, test_inputs, test_outputs, classif
     else:
         logreg = logreg_clasificacion(matriz_r, train_outputs, eta, l2)
 
-
     matriz_r_test = calcular_matriz_r(calcular_distancias(test_inputs, centros, num_rbf), radios)
-    """
-    TODO: Calcular las distancias de los centroides a los patrones de test
-          y la matriz R de test
-    """
 
 
         # # # # KAGGLE # # # #
@@ -179,10 +174,10 @@ def entrenar_rbf(train_inputs, train_outputs, test_inputs, test_outputs, classif
     # # # # # # # # # # #
 
     if not classification:
-        """
-        TODO: Obtener las predicciones de entrenamiento y de test y calcular
-              el MSE
-        """
+        train_mse = mean_squared_error(np.matmul(matriz_r, coeficientes), train_outputs)
+        test_mse = mean_squared_error(np.matmul(matriz_r_test, coeficientes), test_outputs)
+        train_ccr = test_ccr = 0
+
     else:
         lb = OneHotEncoder()
         train_outputs_binarised = lb.fit_transform(train_outputs).toarray()
@@ -366,7 +361,13 @@ def invertir_matriz_regresion(matriz_r, train_outputs):
               coeficiente de salida para cada rbf.
     """
 
-    # TODO: Completar el código de la función
+    if matriz_r.shape[0] == matriz_r.shape[1] - 1:
+        inversa = np.linalg.inv(matriz_r)
+    else:
+        inversa = np.linalg.pinv(matriz_r)
+
+    coeficientes = np.matmul(inversa, train_outputs)
+
     return coeficientes
 
 

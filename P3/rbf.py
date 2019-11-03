@@ -16,6 +16,7 @@ from sklearn.cluster import KMeans
 from sklearn.linear_model import LogisticRegression
 from sklearn.preprocessing import OneHotEncoder
 from sklearn.metrics import mean_squared_error
+from sklearn.metrics import brier_score_loss
 
 warnings.filterwarnings('ignore')
 

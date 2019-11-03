@@ -1,12 +1,9 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 """
-Created on Wed Oct 28 12:37:04 2016
-
-@author: pagutierrez
+@author: Daniel Ranchal Parrado
 """
 
-# TODO Incluir todos los import necesarios
 import pickle
 import os
 import click
@@ -17,7 +14,7 @@ import warnings
 from scipy import spatial
 from sklearn.cluster import KMeans
 from sklearn.linear_model import LogisticRegression
-from sklearn.preprocessing import LabelBinarizer
+from sklearn.preprocessing import OneHotEncoder
 from sklearn.metrics import mean_squared_error
 
 warnings.filterwarnings('ignore')
@@ -187,9 +184,9 @@ def entrenar_rbf(train_inputs, train_outputs, test_inputs, test_outputs, classif
               el MSE
         """
     else:
-        lb = LabelBinarizer()
-        train_outputs_binarised = lb.fit_transform(train_outputs)
-        test_outputs_binarised = lb.fit_transform(test_outputs)
+        lb = OneHotEncoder()
+        train_outputs_binarised = lb.fit_transform(train_outputs).toarray()
+        test_outputs_binarised = lb.fit_transform(test_outputs).toarray()
 
         train_ccr = logreg.score(matriz_r, train_outputs)*100
         test_ccr = logreg.score(matriz_r_test, test_outputs)*100

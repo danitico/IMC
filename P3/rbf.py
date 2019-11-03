@@ -13,9 +13,14 @@ import click
 import arff
 import numpy as np
 import random
+import warnings
 from scipy import spatial
 from sklearn.cluster import KMeans
+from sklearn.linear_model import LogisticRegression
+from sklearn.preprocessing import LabelBinarizer
+from sklearn.metrics import mean_squared_error
 
+warnings.filterwarnings('ignore')
 
 @click.command()
 @click.option('--train_file', '-t', default=None, required=True, type=str, show_default=True,
@@ -147,12 +152,15 @@ def entrenar_rbf(train_inputs, train_outputs, test_inputs, test_outputs, classif
     else:
         logreg = logreg_clasificacion(matriz_r, train_outputs, eta, l2)
 
+
+    matriz_r_test = calcular_matriz_r(calcular_distancias(test_inputs, centros, num_rbf), radios)
     """
     TODO: Calcular las distancias de los centroides a los patrones de test
           y la matriz R de test
     """
 
-    # # # # KAGGLE # # # #
+
+        # # # # KAGGLE # # # #
     if model_file != "":
         save_obj = {
             'classification': classification,
@@ -179,11 +187,14 @@ def entrenar_rbf(train_inputs, train_outputs, test_inputs, test_outputs, classif
               el MSE
         """
     else:
-        """
-        TODO: Obtener las predicciones de entrenamiento y de test y calcular
-              el CCR. Calcular también el MSE, comparando las probabilidades 
-              obtenidas y las probabilidades objetivo
-        """
+        lb = LabelBinarizer()
+        train_outputs_binarised = lb.fit_transform(train_outputs)
+        test_outputs_binarised = lb.fit_transform(test_outputs)
+
+        train_ccr = logreg.score(matriz_r, train_outputs)*100
+        test_ccr = logreg.score(matriz_r_test, test_outputs)*100
+        train_mse = mean_squared_error(train_outputs_binarised, logreg.predict_proba(matriz_r))
+        test_mse = mean_squared_error(test_outputs_binarised, logreg.predict_proba(matriz_r_test))
 
     return train_mse, test_mse, train_ccr, test_ccr
 
@@ -287,14 +298,18 @@ def clustering(clasificacion, train_inputs, train_outputs, num_rbf):
     kmedias.fit(train_inputs)
 
     centros = kmedias.cluster_centers_
-    distancias = np.zeros(shape=(train_inputs.shape[0], num_rbf))
 
-    for i in range(train_inputs.shape[0]):
-        for j in range(num_rbf):
-            distancias[i,j] = spatial.distance.euclidean(train_inputs[i], centros[j])
+    distancias = calcular_distancias(train_inputs, centros, num_rbf)
 
     return kmedias, distancias, centros
 
+def calcular_distancias(patrones, centros, num_rbf):
+    distancias = np.zeros(shape=(patrones.shape[0], num_rbf))
+    for i in range(patrones.shape[0]):
+        for j in range(num_rbf):
+            distancias[i,j] = spatial.distance.euclidean(patrones[i], centros[j])
+
+    return distancias
 
 def calcular_radios(centros, num_rbf):
     """ Calcula el valor de los radios tras el clustering.
@@ -304,10 +319,15 @@ def calcular_radios(centros, num_rbf):
         Devuelve:
             - radios: vector (num_rbf) con el radio de cada RBF.
     """
+    radios = np.zeros(num_rbf)
+    for i in range(num_rbf):
+        for j in range(num_rbf):
+            if i != j:
+                radios[i] += spatial.distance.euclidean(centros[i], centros[j])
 
-    # TODO: Completar el código de la función
+    radios = radios / (2*(num_rbf-1))
+
     return radios
-
 
 def calcular_matriz_r(distancias, radios):
     """ Devuelve el valor de activación de cada neurona para cada patrón 
@@ -322,8 +342,15 @@ def calcular_matriz_r(distancias, radios):
               al final, en la última columna, un vector con todos los 
               valores a 1, que actuará como sesgo.
     """
+    matriz_r = np.zeros(shape=(distancias.shape[0], distancias.shape[1] + 1))
+    matriz_r[:, matriz_r.shape[1]-1] = 1
+    matriz_r[:, 0:matriz_r.shape[1]-1] = np.copy(np.power(distancias, 2))
 
-    # TODO: Completar el código de la función
+    for i in range(distancias.shape[1]):
+        matriz_r[:, i] /= (-2*np.power(radios[i], 2))
+
+    matriz_r[:, 0:matriz_r.shape[1] - 1] = np.exp(matriz_r[:, 0:matriz_r.shape[1] - 1])
+
     return matriz_r
 
 
@@ -346,7 +373,7 @@ def invertir_matriz_regresion(matriz_r, train_outputs):
     return coeficientes
 
 
-def logreg_clasificacion(matriz_r, train_outputs, eta, l2):
+def logreg_clasificacion(matriz_r, train_outputs: np.ndarray, eta, l2):
     """ Devuelve el objeto de tipo regresión logística obtenido a partir de la
         matriz R.
         Recibe los siguientes parámetros:
@@ -365,7 +392,13 @@ def logreg_clasificacion(matriz_r, train_outputs, eta, l2):
               entrenado.
     """
 
-    # TODO: Completar el código de la función
+    if l2:
+        logreg = LogisticRegression(solver='liblinear', C=1/eta)
+    else:
+        logreg = LogisticRegression(penalty='l1', solver='liblinear', C=1/eta)
+
+    logreg.fit(matriz_r, train_outputs)
+
     return logreg
 
 

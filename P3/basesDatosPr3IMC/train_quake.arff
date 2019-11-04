@@ -1,9 +1,9 @@
-@relation,train_quake
+@relation train_quake
 
-@attribute,Focal_depth,numeric
-@attribute,Latitude,numeric
-@attribute,Longitude,numeric
-@attribute,Richter,numeric
+@attribute Focal_depth numeric
+@attribute Latitude numeric
+@attribute Longitude numeric
+@attribute Richter numeric
 
 @data
 -0.61890243902439,-0.324115044247788,-0.969385487276364,0.454545454545454

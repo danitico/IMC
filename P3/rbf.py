@@ -248,6 +248,7 @@ def inicializar_centroides_clas(train_inputs, train_outputs, num_rbf):
     percentage = percentage / train_inputs.shape[0]
     numCentroids = num_rbf*percentage
     numCentroids = numCentroids.round(0)
+    print(numCentroids)
 
     centroides = np.empty(0)
 
@@ -287,7 +288,7 @@ def clustering(clasificacion, train_inputs, train_outputs, num_rbf):
     else:
         centros_iniciales = np.take(train_inputs, random.sample(range(len(train_inputs)), num_rbf), axis=0)
 
-    kmedias = KMeans(n_clusters=num_rbf, init=centros_iniciales, n_init=1, max_iter=500)
+    kmedias = KMeans(n_clusters=num_rbf, init=centros_iniciales, n_init=1, max_iter=500, n_jobs=-1)
     kmedias.fit(train_inputs)
 
     centros = kmedias.cluster_centers_
@@ -392,9 +393,9 @@ def logreg_clasificacion(matriz_r, train_outputs: np.ndarray, eta, l2):
     """
 
     if l2:
-        logreg = LogisticRegression(solver='liblinear', C=1/eta)
+        logreg = LogisticRegression(solver='liblinear', C=1/eta, n_jobs=-1)
     else:
-        logreg = LogisticRegression(penalty='l1', solver='liblinear', C=1/eta)
+        logreg = LogisticRegression(penalty='l1', solver='liblinear', C=1/eta, n_jobs=-1)
 
     logreg.fit(matriz_r, train_outputs)
 

@@ -1,9 +1,9 @@
-@relation,test_quake
+@relation test_quake
 
-@attribute,Focal_depth,numeric
-@attribute,Latitude,numeric
-@attribute,Longitude,numeric
-@attribute,Richter,numeric
+@attribute Focal_depth numeric
+@attribute Latitude numeric
+@attribute Longitude numeric
+@attribute Richter numeric
 
 @data
 -0.844512195121951,-0.504701327433628,-0.989276586287365,0.090909090909091

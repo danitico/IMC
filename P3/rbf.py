@@ -150,7 +150,7 @@ def entrenar_rbf(train_inputs, train_outputs, test_inputs, test_outputs, classif
     else:
         logreg = logreg_clasificacion(matriz_r, train_outputs, eta, l2)
 
-    matriz_r_test = calcular_matriz_r(calcular_distancias(test_inputs, centros, num_rbf), radios)
+    matriz_r_test = calcular_matriz_r(kmedias.transform(test_inputs), radios)
 
 
         # # # # KAGGLE # # # #
@@ -246,9 +246,19 @@ def inicializar_centroides_clas(train_inputs, train_outputs, num_rbf):
 
     labels, percentage = np.unique(train_outputs, return_counts=True)
     percentage = percentage / train_inputs.shape[0]
-    numCentroids = num_rbf*percentage
-    numCentroids = numCentroids.round(0)
-    print(numCentroids)
+    numCentroids = num_rbf * percentage
+
+    if all(percentage == percentage[0]):
+        numCentroids = numCentroids.astype(int)
+        if numCentroids.sum() < num_rbf:
+            for _ in range(num_rbf - numCentroids.sum()):
+                numCentroids[random.randint(0, numCentroids.shape[0]-1)] += 1
+    else:
+        numCentroids = numCentroids.round(0)
+        numCentroids = numCentroids.astype(int)
+        if numCentroids.sum() > num_rbf:
+            for _ in range(numCentroids.sum() - num_rbf):
+                numCentroids[random.randint(0, numCentroids.shape[0] - 1)] -= 1
 
     centroides = np.empty(0)
 
@@ -293,17 +303,9 @@ def clustering(clasificacion, train_inputs, train_outputs, num_rbf):
 
     centros = kmedias.cluster_centers_
 
-    distancias = calcular_distancias(train_inputs, centros, num_rbf)
+    distancias = kmedias.transform(train_inputs)
 
     return kmedias, distancias, centros
-
-def calcular_distancias(patrones, centros, num_rbf):
-    distancias = np.zeros(shape=(patrones.shape[0], num_rbf))
-    for i in range(patrones.shape[0]):
-        for j in range(num_rbf):
-            distancias[i,j] = spatial.distance.euclidean(patrones[i], centros[j])
-
-    return distancias
 
 def calcular_radios(centros, num_rbf):
     """ Calcula el valor de los radios tras el clustering.

@@ -367,7 +367,7 @@ def invertir_matriz_regresion(matriz_r, train_outputs):
               coeficiente de salida para cada rbf.
     """
 
-    if matriz_r.shape[0] == matriz_r.shape[1] - 1:
+    if matriz_r.shape[0] == matriz_r.shape[1]:
         inversa = np.linalg.inv(matriz_r)
     else:
         inversa = np.linalg.pinv(matriz_r)

@@ -9,14 +9,15 @@ import os
 import click
 import arff
 import numpy as np
+import pandas as pd
 import random
 import warnings
 from scipy import spatial
 from sklearn.cluster import KMeans
 from sklearn.linear_model import LogisticRegression
 from sklearn.preprocessing import OneHotEncoder
-from sklearn.metrics import mean_squared_error
-from sklearn.metrics import brier_score_loss
+from sklearn.metrics import mean_squared_error, accuracy_score
+import copy
 
 warnings.filterwarnings('ignore')
 
@@ -35,11 +36,13 @@ warnings.filterwarnings('ignore')
               help=u'Valor del parámetro eta')
 @click.option('--outputs', '-o', required=False, type=int, default=1, show_default=True,
               help=u'Número de columnas de salidas que tiene el conjunto de datos')
+@click.option('--class_as_regression', '-a', required=False, type=bool, default=False, show_default=True, is_flag=True,
+              help=u'Tratar un problema de clasificación como regresión')
 @click.option('--model_file', '-m', default="", show_default=True,
               help=u'Fichero en el que se guardará o desde el que se cargará el modelo (si existe el flag p).')  # KAGGLE
 @click.option('--pred', '-p', is_flag=True, default=False, show_default=True,
               help=u'Activar el modo de predicción.')  # KAGGLE
-def entrenar_rbf_total(train_file, test_file, classification, ratio_rbf, l2, eta, outputs, model_file, pred):
+def entrenar_rbf_total(train_file, test_file, classification, ratio_rbf, l2, eta, outputs, class_as_regression, model_file, pred):
     """ Modelo de aprendizaje supervisado mediante red neuronal de tipo RBF.
         Ejecución de 5 semillas.
     """
@@ -48,6 +51,9 @@ def entrenar_rbf_total(train_file, test_file, classification, ratio_rbf, l2, eta
         if train_file is None:
             print("No se ha especificado el conjunto de entrenamiento (-t)")
             return
+
+        if test_file is None:
+            test_file = copy.deepcopy(train_file)
 
         train_mses = np.empty(5)
         train_ccrs = np.empty(5)
@@ -65,7 +71,7 @@ def entrenar_rbf_total(train_file, test_file, classification, ratio_rbf, l2, eta
             np.random.seed(s + 1)
             train_mses[s], test_mses[s], train_ccrs[s], test_ccrs[s] =\
                 entrenar_rbf(train_inputs, train_outputs, test_inputs, test_outputs,
-                             classification, ratio_rbf, l2, eta, outputs,
+                             classification, ratio_rbf, l2, eta, outputs, class_as_regression,
                              model_file and "{}/{}.pickle".format(model_file, s // 100) or "")
 
             print("MSE de entrenamiento: %f" % train_mses[s])
@@ -106,7 +112,7 @@ def entrenar_rbf_total(train_file, test_file, classification, ratio_rbf, l2, eta
 
 
 def entrenar_rbf(train_inputs, train_outputs, test_inputs, test_outputs, classification, ratio_rbf, l2, eta, outputs,
-                 model_file=""):
+                 class_as_regression ,model_file=""):
     """ Modelo de aprendizaje supervisado mediante red neuronal de tipo RBF.
         Una única ejecución.
         Recibe los siguientes parámetros:
@@ -123,6 +129,7 @@ def entrenar_rbf(train_inputs, train_outputs, test_inputs, test_outputs, classif
               Logística.
             - outputs: número de variables que se tomarán como salidas 
               (todas al final de la matriz).
+            - class_as_regression: Tratar un problema de clasificacion como regresion
         Devuelve:
             - train_mse: Error de tipo Mean Squared Error en entrenamiento. 
               En el caso de clasificación, calcularemos el MSE de las 
@@ -145,12 +152,12 @@ def entrenar_rbf(train_inputs, train_outputs, test_inputs, test_outputs, classif
 
     matriz_r = calcular_matriz_r(distancias, radios)
 
+
     if not classification:
         coeficientes = invertir_matriz_regresion(matriz_r, train_outputs)
     else:
         logreg = logreg_clasificacion(matriz_r, train_outputs, eta, l2)
-        print(logreg.coef_.size - logreg.coef_[np.abs(logreg.coef_) < 1e-5].size)
-        # TODO: Preguntar a pedro sobre los coeficientes, no me sale ninguno....
+#        print(logreg.coef_.size - logreg.coef_[np.abs(logreg.coef_) < 1e-5].size)
 
     matriz_r_test = calcular_matriz_r(kmedias.transform(test_inputs), radios)
 
@@ -177,9 +184,27 @@ def entrenar_rbf(train_inputs, train_outputs, test_inputs, test_outputs, classif
     # # # # # # # # # # #
 
     if not classification:
-        train_mse = mean_squared_error(np.matmul(matriz_r, coeficientes), train_outputs)
-        test_mse = mean_squared_error(np.matmul(matriz_r_test, coeficientes), test_outputs)
-        train_ccr = test_ccr = 0
+        train_predicted = np.matmul(matriz_r, coeficientes)
+        test_predicted = np.matmul(matriz_r_test, coeficientes)
+
+        train_mse = mean_squared_error(train_predicted, train_outputs)
+        test_mse = mean_squared_error(test_predicted, test_outputs)
+
+        if class_as_regression:
+            # Para redondear al entero mas cercano
+            train_predicted[train_predicted > np.max(train_outputs)] = np.max(train_outputs)
+            train_predicted[train_predicted < np.min(train_outputs)] = np.min(train_outputs)
+            train_predicted = np.round(train_predicted)
+
+            test_predicted[test_predicted > np.max(train_outputs)] = np.max(train_outputs)
+            test_predicted[test_predicted < np.min(train_outputs)] = np.min(train_outputs)
+            test_predicted = np.round(test_predicted)
+
+            train_ccr = accuracy_score(train_outputs, train_predicted)*100
+            test_ccr = accuracy_score(test_outputs, test_predicted)*100
+
+        else:
+            train_ccr = test_ccr = 0
 
     else:
         lb = OneHotEncoder()
@@ -212,21 +237,20 @@ def lectura_datos(fichero_train, fichero_test, outputs):
               test.
     """
 
-    datosarchivotrain = arff.load(open(fichero_train))
-    datosarchivotest = arff.load(open(fichero_test))
+    df1 = pd.read_csv(fichero_train, header=None)
+    train = df1.to_numpy()
 
-    datatrain = np.array(datosarchivotrain['data'])
-    datatest = np.array(datosarchivotest['data'])
+    df2 = pd.read_csv(fichero_test, header=None)
+    test = df2.to_numpy()
 
-    train_inputs = datatrain[:, 0:-outputs]
-    train_outputs = datatrain[:, datatrain.shape[1]-1:datatrain.shape[1]+outputs]
-    train_inputs = train_inputs.astype(np.float32)
-    train_outputs = train_outputs.astype(np.float32)
+    train = train.astype(np.float32)
+    test = test.astype(np.float32)
 
-    test_inputs = datatest[:, 0:-outputs]
-    test_outputs = datatest[:, datatest.shape[1]-1:datatest.shape[1]+outputs]
-    test_inputs = test_inputs.astype(np.float32)
-    test_outputs = test_outputs.astype(np.float32)
+    train_inputs = train[:, 0:-outputs]
+    train_outputs = train[:, train.shape[1]-1:train.shape[1]+outputs]
+
+    test_inputs = test[:, 0:-outputs]
+    test_outputs = test[:, test.shape[1]-1:test.shape[1]+outputs]
 
     return train_inputs, train_outputs, test_inputs, test_outputs
 

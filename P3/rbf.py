@@ -149,6 +149,8 @@ def entrenar_rbf(train_inputs, train_outputs, test_inputs, test_outputs, classif
         coeficientes = invertir_matriz_regresion(matriz_r, train_outputs)
     else:
         logreg = logreg_clasificacion(matriz_r, train_outputs, eta, l2)
+        print(logreg.coef_.size - logreg.coef_[np.abs(logreg.coef_) < 1e-5].size)
+        # TODO: Preguntar a pedro sobre los coeficientes, no me sale ninguno....
 
     matriz_r_test = calcular_matriz_r(kmedias.transform(test_inputs), radios)
 

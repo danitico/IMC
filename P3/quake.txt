@@ -1,0 +1,42 @@
+5%
+Resumen de resultados
+*********************
+MSE de entrenamiento: 0.028429 +- 0.000098
+MSE de test: 0.028152 +- 0.000216
+CCR de entrenamiento: 0.00% +- 0.00%
+CCR de test: 0.00% +- 0.00%
+
+15%
+Resumen de resultados
+*********************
+MSE de entrenamiento: 0.025486 +- 0.000149
+MSE de test: 0.036785 +- 0.002210
+CCR de entrenamiento: 0.00% +- 0.00%
+CCR de test: 0.00% +- 0.00%
+
+25%
+Resumen de resultados
+*********************
+MSE de entrenamiento: 0.022523 +- 0.000306
+MSE de test: 0.048429 +- 0.004677
+CCR de entrenamiento: 0.00% +- 0.00%
+CCR de test: 0.00% +- 0.00%
+
+50%
+Resumen de resultados
+*********************
+MSE de entrenamiento: 0.014916 +- 0.000361
+MSE de test: 0.100625 +- 0.007828
+CCR de entrenamiento: 0.00% +- 0.00%
+CCR de test: 0.00% +- 0.00%
+
+----------------
+Mejor estructura con 5%
+Utilizando k-means++ para los centroides iniciales
+*********************
+Resumen de resultados
+*********************
+MSE de entrenamiento: 0.028327 +- 0.000075
+MSE de test: 0.028309 +- 0.000211
+CCR de entrenamiento: 0.00% +- 0.00%
+CCR de test: 0.00% +- 0.00%

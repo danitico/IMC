@@ -1,0 +1,41 @@
+5%
+Resumen de resultados
+*********************
+MSE de entrenamiento: 0.020848 +- 0.000350
+MSE de test: 0.023601 +- 0.000454
+CCR de entrenamiento: 0.00% +- 0.00%
+CCR de test: 0.00% +- 0.00%
+
+15%
+Resumen de resultados
+*********************
+MSE de entrenamiento: 0.013695 +- 0.000251
+MSE de test: 0.019537 +- 0.000375
+CCR de entrenamiento: 0.00% +- 0.00%
+CCR de test: 0.00% +- 0.00%
+
+25%
+Resumen de resultados
+*********************
+MSE de entrenamiento: 0.010021 +- 0.000085
+MSE de test: 0.019898 +- 0.000801
+CCR de entrenamiento: 0.00% +- 0.00%
+CCR de test: 0.00% +- 0.00%
+
+50%
+Resumen de resultados
+*********************
+MSE de entrenamiento: 0.005024 +- 0.000089
+MSE de test: 0.053544 +- 0.011541
+CCR de entrenamiento: 0.00% +- 0.00%
+CCR de test: 0.00% +- 0.00%
+
+
+mejor estructura es 15%
+Ahora se hace con el algoritmo kmeans para coger centroides
+Resumen de resultados
+*********************
+MSE de entrenamiento: 0.014646 +- 0.000111
+MSE de test: 0.021084 +- 0.000567
+CCR de entrenamiento: 0.00% +- 0.00%
+CCR de test: 0.00% +- 0.00%

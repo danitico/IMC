@@ -1,0 +1,252 @@
+5% l1 1e-5
+Resumen de resultados
+*********************
+MSE de entrenamiento: 0.028729 +- 0.001283
+MSE de test: 0.029843 +- 0.002279
+CCR de entrenamiento: 88.53% +- 0.41%
+CCR de test: 89.07% +- 0.98%
+
+15% l1 1e-5
+Resumen de resultados
+*********************
+MSE de entrenamiento: 0.000383 +- 0.000134
+MSE de test: 0.043442 +- 0.002727
+CCR de entrenamiento: 100.00% +- 0.00%
+CCR de test: 85.93% +- 0.93%
+
+25% l1 1e-5
+Resumen de resultados
+*********************
+MSE de entrenamiento: 0.000035 +- 0.000004
+MSE de test: 0.038641 +- 0.002423
+CCR de entrenamiento: 100.00% +- 0.00%
+CCR de test: 87.40% +- 0.83%
+
+50%
+Resumen de resultados
+*********************
+MSE de entrenamiento: 0.000017 +- 0.000002
+MSE de test: 0.035802 +- 0.001631
+CCR de entrenamiento: 100.00% +- 0.00%
+CCR de test: 87.87% +- 0.69%
+
+
+Mejor estructura estructura 5%
+------------------------------
+eta=1 L1
+Resumen de resultados
+*********************
+MSE de entrenamiento: 0.054615 +- 0.002002
+MSE de test: 0.052274 +- 0.002573
+CCR de entrenamiento: 79.87% +- 0.80%
+CCR de test: 82.07% +- 1.73%
+
+eta=1 L2
+Resumen de resultados
+*********************
+MSE de entrenamiento: 0.066268 +- 0.001353
+MSE de test: 0.064991 +- 0.001601
+CCR de entrenamiento: 78.36% +- 1.03%
+CCR de test: 78.73% +- 2.48%
+
+eta=0.1 L1
+Resumen de resultados
+*********************
+MSE de entrenamiento: 0.034582 +- 0.000697
+MSE de test: 0.031199 +- 0.000406
+CCR de entrenamiento: 86.07% +- 0.21%
+CCR de test: 88.93% +- 0.68%
+
+eta=0.1 L2
+Resumen de resultados
+*********************
+MSE de entrenamiento: 0.045248 +- 0.000817
+MSE de test: 0.043502 +- 0.001660
+CCR de entrenamiento: 83.60% +- 0.37%
+CCR de test: 86.27% +- 1.16%
+
+eta=0.01 L1
+Resumen de resultados
+*********************
+MSE de entrenamiento: 0.030579 +- 0.000874
+MSE de test: 0.030222 +- 0.001306
+CCR de entrenamiento: 87.89% +- 0.56%
+CCR de test: 88.27% +- 1.22%
+
+
+eta=0.01 L2
+Resumen de resultados
+*********************
+MSE de entrenamiento: 0.036359 +- 0.001087
+MSE de test: 0.033793 +- 0.001389
+CCR de entrenamiento: 86.11% +- 0.29%
+CCR de test: 88.53% +- 1.02%
+
+eta=0.001 L1
+Resumen de resultados
+*********************
+MSE de entrenamiento: 0.029920 +- 0.001414
+MSE de test: 0.028668 +- 0.001265
+CCR de entrenamiento: 88.04% +- 0.86%
+CCR de test: 88.93% +- 1.68%
+
+eta=0.001 L2
+Resumen de resultados
+*********************
+MSE de entrenamiento: 0.030963 +- 0.000840
+MSE de test: 0.029074 +- 0.000624
+CCR de entrenamiento: 87.24% +- 0.74%
+CCR de test: 90.00% +- 0.67%
+
+
+eta=0.0001 L1
+Resumen de resultados
+*********************
+MSE de entrenamiento: 0.029227 +- 0.000295
+MSE de test: 0.030764 +- 0.001242
+CCR de entrenamiento: 88.33% +- 0.52%
+CCR de test: 88.20% +- 1.15%
+
+
+eta=0.0001 L2
+Resumen de resultados
+*********************
+MSE de entrenamiento: 0.029400 +- 0.001412
+MSE de test: 0.030268 +- 0.000702
+CCR de entrenamiento: 88.22% +- 0.54%
+CCR de test: 89.27% +- 0.57%
+
+eta=0.00001 L1
+Resumen de resultados
+*********************
+MSE de entrenamiento: 0.030283 +- 0.001167
+MSE de test: 0.029616 +- 0.001540
+CCR de entrenamiento: 87.78% +- 0.44%
+CCR de test: 88.60% +- 1.12%
+
+
+eta=0.00001 L2
+Resumen de resultados
+*********************
+MSE de entrenamiento: 0.029646 +- 0.001418
+MSE de test: 0.029179 +- 0.001931
+CCR de entrenamiento: 88.38% +- 0.64%
+CCR de test: 89.33% +- 1.63%
+
+
+eta=0.000001 L1
+Resumen de resultados
+*********************
+MSE de entrenamiento: 0.030252 +- 0.000993
+MSE de test: 0.030392 +- 0.001340
+CCR de entrenamiento: 88.04% +- 0.50%
+CCR de test: 88.93% +- 0.98%
+
+
+eta=0.000001 L2
+Resumen de resultados
+*********************
+MSE de entrenamiento: 0.030282 +- 0.001657
+MSE de test: 0.030579 +- 0.000905
+CCR de entrenamiento: 87.91% +- 1.23%
+CCR de test: 88.93% +- 0.53%
+
+eta=0.0000001 L1
+Resumen de resultados
+*********************
+MSE de entrenamiento: 0.030353 +- 0.000647
+MSE de test: 0.031063 +- 0.002670
+CCR de entrenamiento: 87.67% +- 0.47%
+CCR de test: 88.20% +- 1.88%
+
+eta=0.0000001 L2
+Resumen de resultados
+*********************
+MSE de entrenamiento: 0.028860 +- 0.001852
+MSE de test: 0.029615 +- 0.002283
+CCR de entrenamiento: 88.38% +- 0.72%
+CCR de test: 89.27% +- 1.54%
+
+
+eta=0.00000001 L1
+Resumen de resultados
+*********************
+MSE de entrenamiento: 0.030278 +- 0.000633
+MSE de test: 0.029984 +- 0.001324
+CCR de entrenamiento: 87.89% +- 0.82%
+CCR de test: 88.40% +- 0.74%
+
+eta=0.00000001 L2
+Resumen de resultados
+*********************
+MSE de entrenamiento: 0.029901 +- 0.000727
+MSE de test: 0.029867 +- 0.002027
+CCR de entrenamiento: 87.89% +- 0.40%
+CCR de test: 88.73% +- 0.68%
+
+eta=0.000000001 L1
+Resumen de resultados
+*********************
+MSE de entrenamiento: 0.029185 +- 0.000938
+MSE de test: 0.029787 +- 0.001814
+CCR de entrenamiento: 88.58% +- 0.39%
+CCR de test: 89.27% +- 1.10%
+
+
+eta=0.000000001 L2
+Resumen de resultados
+*********************
+MSE de entrenamiento: 0.029963 +- 0.000161
+MSE de test: 0.029547 +- 0.002265
+CCR de entrenamiento: 87.64% +- 0.34%
+CCR de test: 89.47% +- 1.00%
+
+
+eta=0.0000000001 L1
+Resumen de resultados
+*********************
+MSE de entrenamiento: 0.029711 +- 0.000932
+MSE de test: 0.032303 +- 0.003927
+CCR de entrenamiento: 87.89% +- 0.35%
+CCR de test: 87.20% +- 2.20%
+
+eta=0.0000000001 L2
+Resumen de resultados
+*********************
+MSE de entrenamiento: 0.029613 +- 0.000260
+MSE de test: 0.029119 +- 0.001088
+CCR de entrenamiento: 87.98% +- 0.53%
+CCR de test: 88.93% +- 0.98%
+
+
+
+------------------------------------
+Para comprobar el numero de coeficientes
+voy a coger la estructura del 5% eta 1e-1
+
+L1 -> 185
+L2 -> 276
+
+----------------------------------
+Utilizando k-means++ con la mejor estructura 5% eta=1e-5
+Resumen de resultados
+*********************
+MSE de entrenamiento: 0.029118 +- 0.000908
+MSE de test: 0.029034 +- 0.001382
+CCR de entrenamiento: 88.11% +- 0.60%
+CCR de test: 89.40% +- 0.57%
+
+
+-----------------------------
+haciendolo como regresion 5%
+Resumen de resultados
+*********************
+MSE de entrenamiento: 0.855483 +- 0.018500
+MSE de test: 0.925346 +- 0.027630
+CCR de entrenamiento: 52.31% +- 2.29%
+CCR de test: 51.07% +- 2.23%
+
+
+
+
+

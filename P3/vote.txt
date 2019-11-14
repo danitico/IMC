@@ -248,3 +248,14 @@ CCR de entrenamiento: 97.30% +- 0.36%
 CCR de test: 95.05% +- 0.73%
 
 
+--------------------------
+Mejor matriz de confusion con 15%, semilla 3
+[[37  5]
+ [ 1 66]]
+
+En python tarda 5,176 segundos con 48 neuronas
+En c++ tarda 15 segundos, 1 capa 48 neuronas
+40 2
+1 66
+
+

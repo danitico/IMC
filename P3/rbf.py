@@ -6,18 +6,17 @@
 
 import pickle
 import os
+import copy
 import click
-import arff
-import numpy as np
-import pandas as pd
 import random
 import warnings
+import numpy as np
+import pandas as pd
 from scipy import spatial
 from sklearn.cluster import KMeans
 from sklearn.linear_model import LogisticRegression
 from sklearn.preprocessing import OneHotEncoder
-from sklearn.metrics import mean_squared_error, accuracy_score
-import copy
+from sklearn.metrics import mean_squared_error, accuracy_score, confusion_matrix
 
 warnings.filterwarnings('ignore')
 
@@ -72,7 +71,7 @@ def entrenar_rbf_total(train_file, test_file, classification, ratio_rbf, l2, eta
             train_mses[s], test_mses[s], train_ccrs[s], test_ccrs[s] =\
                 entrenar_rbf(train_inputs, train_outputs, test_inputs, test_outputs,
                              classification, ratio_rbf, l2, eta, outputs, class_as_regression,
-                             model_file and "{}/{}.pickle".format(model_file, s // 100) or "")
+                             model_file and "{}/{}.pickle".format(model_file, s) or "")
 
             print("MSE de entrenamiento: %f" % train_mses[s])
             print("MSE de test: %f" % test_mses[s])
@@ -215,6 +214,7 @@ def entrenar_rbf(train_inputs, train_outputs, test_inputs, test_outputs, classif
         test_ccr = logreg.score(matriz_r_test, test_outputs)*100
         train_mse = mean_squared_error(train_outputs_binarised, logreg.predict_proba(matriz_r))
         test_mse = mean_squared_error(test_outputs_binarised, logreg.predict_proba(matriz_r_test))
+        print(confusion_matrix(test_outputs, logreg.predict(matriz_r_test)))
 
     return train_mse, test_mse, train_ccr, test_ccr
 
@@ -247,11 +247,11 @@ def lectura_datos(fichero_train, fichero_test, outputs):
     test = test.astype(np.float32)
 
     train_inputs = train[:, 0:-outputs]
-    train_outputs = train[:, train.shape[1]-1:train.shape[1]+outputs]
+    train_outputs = train[:, train_inputs.shape[1]:]
 
     test_inputs = test[:, 0:-outputs]
-    test_outputs = test[:, test.shape[1]-1:test.shape[1]+outputs]
-
+    test_outputs = test[:, test_inputs.shape[1]:]
+# 0 1 2   3 4
     return train_inputs, train_outputs, test_inputs, test_outputs
 
 

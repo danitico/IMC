@@ -37,8 +37,8 @@ mejor estructura con 15%
 *********************
 Resumen de resultados
 *********************
-MSE de entrenamiento: 0.011463 +- 0.000171
-MSE de test: 0.221692 +- 0.044713
+MSE de entrenamiento: 0.013827 +- 0.000176
+MSE de test: 0.022296 +- 0.000510
 CCR de entrenamiento: 0.00% +- 0.00%
 CCR de test: 0.00% +- 0.00%
 

@@ -21,8 +21,7 @@ scaler = MinMaxScaler()
 data_inputs = scaler.fit_transform(data_inputs)
 
 
-X_train, X_test, y_train, y_test = train_test_split(data_inputs, data_outputs, test_size=0.4, stratify=data_outputs,
-                                                    random_state=42)
+X_train, X_test, y_train, y_test = train_test_split(data_inputs, data_outputs, test_size=0.4, stratify=data_outputs, random_state=42)
 
 
 for i in range(1, 15):

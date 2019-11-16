@@ -21,7 +21,7 @@ from sklearn.metrics import mean_squared_error, accuracy_score, confusion_matrix
 warnings.filterwarnings('ignore')
 
 @click.command()
-@click.option('--train_file', '-t', default=None, required=True, type=str, show_default=True,
+@click.option('--train_file', '-t', default=None, required=False, type=str, show_default=True,
               help=u'Fichero con los datos de entrenamiento.')
 @click.option('--test_file', '-T', default=None, required=False, type=str, show_default=True,
               help=u'Fichero con los datos de generalización.')
@@ -59,9 +59,7 @@ def entrenar_rbf_total(train_file, test_file, classification, ratio_rbf, l2, eta
         test_mses = np.empty(5)
         test_ccrs = np.empty(5)
 
-        train_inputs, train_outputs, test_inputs, test_outputs = lectura_datos(train_file,
-                                                                               test_file,
-                                                                               outputs)
+        train_inputs, train_outputs, test_inputs, test_outputs = lectura_datos(train_file, test_file, outputs)
 
         for s in range(0, 5):
             print("-----------")
@@ -210,11 +208,17 @@ def entrenar_rbf(train_inputs, train_outputs, test_inputs, test_outputs, classif
         train_outputs_binarised = lb.fit_transform(train_outputs).toarray()
         test_outputs_binarised = lb.fit_transform(test_outputs).toarray()
 
+        predicted = logreg.predict(matriz_r_test)
         train_ccr = logreg.score(matriz_r, train_outputs)*100
         test_ccr = logreg.score(matriz_r_test, test_outputs)*100
         train_mse = mean_squared_error(train_outputs_binarised, logreg.predict_proba(matriz_r))
         test_mse = mean_squared_error(test_outputs_binarised, logreg.predict_proba(matriz_r_test))
-        print(confusion_matrix(test_outputs, logreg.predict(matriz_r_test)))
+        print(confusion_matrix(test_outputs, predicted))
+
+#        for i in range(0, predicted.shape[0]):
+#            if predicted[i] != test_outputs[i]:
+#                print("Imagen ",  i, " mal clasificada. Real: ", test_outputs[i], " Predicted: ", predicted[i])
+
 
     return train_mse, test_mse, train_ccr, test_ccr
 
@@ -251,7 +255,7 @@ def lectura_datos(fichero_train, fichero_test, outputs):
 
     test_inputs = test[:, 0:-outputs]
     test_outputs = test[:, test_inputs.shape[1]:]
-# 0 1 2   3 4
+
     return train_inputs, train_outputs, test_inputs, test_outputs
 
 
